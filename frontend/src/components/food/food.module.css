@@ -1,0 +1,60 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  background: linear-gradient(135deg, var(--color-primary-soft), #ffe7dd);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: var(--color-primary-dark);
+  overflow: hidden;
+}
+.media img { width: 100%; height: 100%; object-fit: cover; }
+.mediaBadges {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.6rem;
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+.body { display: flex; flex-direction: column; gap: 0.5rem; padding: var(--space-4); flex: 1; }
+.title { font-size: var(--text-base); font-weight: 700; margin: 0; }
+.subtitle { font-size: var(--text-sm); color: var(--color-muted); margin: 0; }
+.metaRow { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: auto; }
+.price { font-size: var(--text-lg); font-weight: 800; color: var(--color-ink); }
+.priceFrom { font-size: var(--text-xs); color: var(--color-muted); font-weight: 500; display: block; }
+.actions { display: flex; gap: 0.5rem; margin-top: 0.35rem; }
+
+.restaurantCard { display: flex; gap: var(--space-4); align-items: stretch; }
+.restaurantMedia {
+  width: 108px;
+  min-width: 108px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #ffe7dd, #fff1ec);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  overflow: hidden;
+}
+.restaurantMedia img { width: 100%; height: 100%; object-fit: cover; }
+.restaurantBody { display: flex; flex-direction: column; gap: 0.3rem; justify-content: center; padding: var(--space-3) 0; }
+.cuisine { font-size: var(--text-sm); color: var(--color-muted); }
+.ratingPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: var(--color-success-soft);
+  color: var(--color-success);
+  font-weight: 700;
+  font-size: var(--text-xs);
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-sm);
+}
+.providerChips { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-top: 0.25rem; }

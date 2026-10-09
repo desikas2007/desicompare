@@ -1,0 +1,63 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: foodcompare-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: foodcompare-api
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      MONGODB_URI: mongodb://mongo:27017/foodcompare
+      FRONTEND_URL: http://localhost:3000
+      API_GLOBAL_PREFIX: api/v1
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-change-me-access-secret-min-32-characters-long}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change-me-refresh-secret-min-32-characters-long}
+      COOKIE_SECRET: ${COOKIE_SECRET:-change-me-cookie-secret-min-32-characters-long}
+      ACCESS_TOKEN_TTL: 15m
+      REFRESH_TOKEN_TTL: 30d
+      AUTH_COOKIE_NAME: fc_refresh
+      ALLOW_REGISTRATION: "true"
+      REQUIRE_EMAIL_VERIFICATION: "false"
+      PROVIDER_INTEGRATION_MODE: demo
+      RATE_LIMIT_TTL: "60"
+      RATE_LIMIT_LIMIT: "120"
+      LOG_LEVEL: info
+    ports:
+      - "4000:4000"
+
+  web:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
+    container_name: foodcompare-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
+    ports:
+      - "3000:3000"
+
+volumes:
+  mongo-data:
