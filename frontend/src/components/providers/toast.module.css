@@ -23,9 +23,9 @@
   animation: slideIn 180ms ease;
 }
 
-.success { background: #0f7a43; }
-.error { background: #b3261e; }
-.info { background: #2b3b52; }
+.success { background: var(--color-success); }
+.error { background: var(--color-danger); }
+.info { background: var(--color-ink); }
 
 .close {
   background: transparent;

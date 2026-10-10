@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { ChevronRight, Clock, Minus, TrendingDown } from 'lucide-react';
 import { Badge, DemoBadge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
 import { formatCurrency, formatMinutes, titleCase } from '@/lib/format';
+import { OrderPlatformButton } from '@/components/comparison/OrderPlatformButton';
 import type { ComparisonResult, ProviderQuote } from '@/types';
-import styles from './comparison.module.css';
 
 function statusTone(status: string) {
   switch (status) {
@@ -20,9 +20,9 @@ function statusTone(status: string) {
   }
 }
 
-function Breakdown({ quote }: { quote: ProviderQuote }) {
+function feeRows(quote: ProviderQuote): Array<[string, number]> {
   const { breakdown } = quote;
-  const rows: Array<[string, number]> = [
+  return [
     ['Item subtotal', breakdown.itemSubtotal],
     ['Item discount', -breakdown.itemDiscount],
     ['Delivery fee', breakdown.deliveryFee],
@@ -32,72 +32,221 @@ function Breakdown({ quote }: { quote: ProviderQuote }) {
     ['Other fees', breakdown.otherFees],
     ['Coupon discount', -breakdown.couponDiscount],
   ];
+}
+
+const FEE_LABELS = [
+  'Item subtotal',
+  'Item discount',
+  'Delivery fee',
+  'Platform fee',
+  'Packaging',
+  'Taxes',
+  'Other fees',
+  'Coupon discount',
+];
+
+function isBestQuote(result: ComparisonResult, quote: ProviderQuote): boolean {
+  return Boolean(
+    result.bestQuote &&
+      result.bestQuote.providerId === quote.providerId &&
+      result.bestQuote.providerSlug === quote.providerSlug,
+  );
+}
+
+/* ----------------------------- Desktop table ---------------------------- */
+
+function ComparisonTable({ result, quotes }: { result: ComparisonResult; quotes: ProviderQuote[] }) {
+  const activeFeeLabels = FEE_LABELS.filter((label) =>
+    quotes.some((quote) => feeRows(quote).some(([name, value]) => name === label && value !== 0)),
+  );
+
   return (
-    <div className={styles.breakdown}>
-      {rows
-        .filter(([, value]) => value !== 0)
-        .map(([label, value]) => (
-          <div key={label} className={styles.breakdownRow}>
-            <span>{label}</span>
-            <span>{formatCurrency(value, quote.currency)}</span>
-          </div>
-        ))}
-      <div className={`${styles.breakdownRow} ${styles.breakdownTotal}`}>
-        <span>Estimated total</span>
-        <span>{formatCurrency(breakdown.estimatedTotal, quote.currency)}</span>
-      </div>
-      {quote.notes && quote.notes.length ? (
-        <div className={styles.notes}>
-          <strong>Notes</strong>
-          <ul className={styles.notesList}>
-            {quote.notes.map((note) => (
-              <li key={note}>{note}</li>
+    <div className="hidden overflow-hidden rounded-3xl border border-line bg-surface lg:block">
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-sm">
+          <thead>
+            <tr>
+              <th className="sticky left-0 z-10 bg-surface p-4 text-left align-bottom text-xs font-semibold uppercase tracking-wide text-muted">
+                Compare
+              </th>
+              {quotes.map((quote) => {
+                const best = isBestQuote(result, quote);
+                return (
+                  <th
+                    key={`${quote.providerId}-${quote.providerSlug}`}
+                    className={[
+                      'min-w-[190px] border-l border-line p-4 text-left align-bottom',
+                      best ? 'bg-primary-soft' : '',
+                    ].join(' ')}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-base font-bold text-ink">{quote.providerName}</span>
+                      {best ? <Badge tone="success">Best price</Badge> : null}
+                    </div>
+                    <p className="mt-1 text-xs font-normal text-ink-soft">{quote.restaurantName}</p>
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                      <Badge tone={statusTone(quote.quoteStatus)}>{titleCase(quote.quoteStatus)}</Badge>
+                      <DemoBadge isDemo={quote.sourceType === 'demo'} />
+                    </div>
+                  </th>
+                );
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-t border-line">
+              <td className="sticky left-0 z-10 bg-surface p-4 font-semibold text-ink">Estimated total</td>
+              {quotes.map((quote) => {
+                const best = isBestQuote(result, quote);
+                return (
+                  <td
+                    key={`${quote.providerId}-total`}
+                    className={[
+                      'border-l border-line p-4',
+                      best ? 'bg-primary-soft' : '',
+                    ].join(' ')}
+                  >
+                    <span className="text-lg font-bold text-ink">
+                      {formatCurrency(quote.breakdown.estimatedTotal, quote.currency)}
+                    </span>
+                  </td>
+                );
+              })}
+            </tr>
+            {activeFeeLabels.map((label) => (
+              <tr key={label} className="border-t border-line">
+                <td className="sticky left-0 z-10 bg-surface p-4 text-ink-soft">{label}</td>
+                {quotes.map((quote) => {
+                  const value = feeRows(quote).find(([name]) => name === label)?.[1] ?? 0;
+                  const best = isBestQuote(result, quote);
+                  return (
+                    <td
+                      key={`${quote.providerId}-${label}`}
+                      className={['border-l border-line p-4 text-ink', best ? 'bg-primary-soft/60' : ''].join(
+                        ' ',
+                      )}
+                    >
+                      {value === 0 ? <Minus className="h-4 w-4 text-muted" /> : formatCurrency(value, quote.currency)}
+                    </td>
+                  );
+                })}
+              </tr>
             ))}
-          </ul>
-        </div>
-      ) : null}
+            <tr className="border-t border-line">
+              <td className="sticky left-0 z-10 bg-surface p-4 text-ink-soft">Est. delivery</td>
+              {quotes.map((quote) => (
+                <td
+                  key={`${quote.providerId}-eta`}
+                  className={[
+                    'border-l border-line p-4',
+                    isBestQuote(result, quote) ? 'bg-primary-soft/60' : '',
+                  ].join(' ')}
+                >
+                  {quote.estimatedDeliveryMinutes != null ? (
+                    <span className="inline-flex items-center gap-1 text-ink">
+                      <Clock className="h-3.5 w-3.5 text-muted" />
+                      {formatMinutes(quote.estimatedDeliveryMinutes)}
+                    </span>
+                  ) : (
+                    <Minus className="h-4 w-4 text-muted" />
+                  )}
+                </td>
+              ))}
+            </tr>
+            <tr className="border-t border-line">
+              <td className="sticky left-0 z-10 bg-surface p-4" />
+              {quotes.map((quote) => (
+                <td
+                  key={`${quote.providerId}-action`}
+                  className={[
+                    'border-l border-line p-4',
+                    isBestQuote(result, quote) ? 'bg-primary-soft/60' : '',
+                  ].join(' ')}
+                >
+                  <OrderPlatformButton quote={quote} className="w-full" />
+                </td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
 
-function QuoteRow({ quote, isBest }: { quote: ProviderQuote; isBest: boolean }) {
+/* ------------------------------ Mobile cards ----------------------------- */
+
+function QuoteCard({ quote, isBest }: { quote: ProviderQuote; isBest: boolean }) {
   const [open, setOpen] = useState(false);
+  const rows = feeRows(quote).filter(([, value]) => value !== 0);
+
   return (
-    <div className={`${styles.quote} ${isBest ? styles.quoteBest : ''}`}>
-      <div className={styles.quoteHeader}>
-        <div className={styles.quoteProvider}>
-          <span className={styles.quoteName}>
-            {quote.providerName} {isBest ? <Badge tone="success">Best price</Badge> : null}
-          </span>
-          <span className={styles.quoteSub}>
+    <div
+      className={[
+        'rounded-3xl border bg-surface p-4 shadow-sm',
+        isBest ? 'border-primary' : 'border-line',
+      ].join(' ')}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-base font-bold text-ink">{quote.providerName}</span>
+            {isBest ? <Badge tone="success">Best price</Badge> : null}
+          </div>
+          <p className="mt-1 text-xs text-ink-soft">
             {quote.restaurantName} · {quote.foodName}
-            {quote.estimatedDeliveryMinutes != null
-              ? ` · ~${formatMinutes(quote.estimatedDeliveryMinutes)}`
-              : ''}
-          </span>
-          <span className={styles.quoteSub}>
-            <Badge tone={statusTone(quote.quoteStatus)}>{titleCase(quote.quoteStatus)}</Badge>{' '}
+          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            <Badge tone={statusTone(quote.quoteStatus)}>{titleCase(quote.quoteStatus)}</Badge>
             <DemoBadge isDemo={quote.sourceType === 'demo'} />
-          </span>
+            {quote.estimatedDeliveryMinutes != null ? (
+              <span className="inline-flex items-center gap-1 text-xs text-muted">
+                <Clock className="h-3.5 w-3.5" />
+                {formatMinutes(quote.estimatedDeliveryMinutes)}
+              </span>
+            ) : null}
+          </div>
         </div>
-        <div className={styles.quoteTotals}>
-          <div className={styles.quoteTotal}>{formatCurrency(quote.breakdown.estimatedTotal, quote.currency)}</div>
-        </div>
-        <div className={styles.quoteActions}>
-          <Button variant="secondary" size="sm" onClick={() => setOpen((value) => !value)}>
-            {open ? 'Hide fees' : 'View fees'}
-          </Button>
-          {quote.orderingCapability === 'external' && quote.officialOrderUrl ? (
-            <a href={quote.officialOrderUrl} target="_blank" rel="noreferrer noopener">
-              <Button size="sm">Order on {quote.providerName}</Button>
-            </a>
+        <span className="shrink-0 text-lg font-bold text-ink">
+          {formatCurrency(quote.breakdown.estimatedTotal, quote.currency)}
+        </span>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary"
+      >
+        {open ? 'Hide fee breakdown' : 'View fee breakdown'}
+        <ChevronRight className={['h-4 w-4 transition', open ? 'rotate-90' : ''].join(' ')} />
+      </button>
+
+      {open ? (
+        <div className="mt-3 space-y-1.5 border-t border-line pt-3 text-sm">
+          {rows.map(([label, value]) => (
+            <div key={label} className="flex items-center justify-between text-ink-soft">
+              <span>{label}</span>
+              <span className="text-ink">{formatCurrency(value, quote.currency)}</span>
+            </div>
+          ))}
+          {quote.notes?.length ? (
+            <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-muted">
+              {quote.notes.map((note) => (
+                <li key={note}>{note}</li>
+              ))}
+            </ul>
           ) : null}
         </div>
+      ) : null}
+
+      <div className="mt-4">
+        <OrderPlatformButton quote={quote} className="w-full" />
       </div>
-      {open ? <Breakdown quote={quote} /> : null}
     </div>
   );
 }
+
+/* --------------------------------- Layout -------------------------------- */
 
 export function ComparisonResultView({ result }: { result: ComparisonResult }) {
   const quotes = [...result.quotes].sort(
@@ -105,53 +254,68 @@ export function ComparisonResultView({ result }: { result: ComparisonResult }) {
   );
 
   return (
-    <div className={styles.wrap}>
-      <div className={styles.summary}>
-        <div className={styles.bestCard}>
-          <span className={styles.bestLabel}>★ Cheapest option</span>
+    <div className="flex flex-col gap-6">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="rounded-3xl border border-line bg-surface p-5 shadow-sm">
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-success">
+            <TrendingDown className="h-4 w-4" />
+            Cheapest option
+          </span>
           {result.bestQuote ? (
             <>
-              <p className={styles.bestProvider}>{result.bestQuote.providerName}</p>
-              <p className={styles.bestMeta}>
+              <p className="mt-2 text-lg font-bold text-ink">{result.bestQuote.providerName}</p>
+              <p className="text-sm text-ink-soft">
                 {result.bestQuote.restaurantName} · {result.bestQuote.foodName} × {result.quantity}
               </p>
-              <p className={styles.bestTotal}>
+              <p className="mt-2 text-3xl font-bold text-ink">
                 {formatCurrency(result.bestQuote.breakdown.estimatedTotal, result.currency)}
               </p>
-              <DemoBadge isDemo={result.isDemoData} />
+              <div className="mt-2">
+                <DemoBadge isDemo={result.isDemoData} />
+              </div>
             </>
           ) : (
-            <p className={styles.bestMeta}>No available quote for this item.</p>
+            <p className="mt-2 text-sm text-ink-soft">No available quote for this item.</p>
           )}
         </div>
-        <div className={styles.savingsCard}>
-          <span className={styles.savingsLabel}>Potential savings</span>
-          <span className={styles.savingsValue}>{formatCurrency(result.potentialSavings, result.currency)}</span>
-          <span className={styles.savingsLabel}>
+
+        <div className="rounded-3xl border border-primary/30 bg-primary-soft p-5">
+          <span className="text-xs font-semibold uppercase tracking-wide text-primary-dark">
+            Potential savings
+          </span>
+          <p className="mt-2 text-3xl font-bold text-primary-dark">
+            {formatCurrency(result.potentialSavings, result.currency)}
+          </p>
+          <p className="mt-1 text-sm text-primary-dark/80">
             {result.savingsPercentage > 0
               ? `${result.savingsPercentage.toFixed(1)}% cheaper than the most expensive option`
               : 'All providers are priced similarly'}
-          </span>
-          <span className={styles.savingsLabel}>
+          </p>
+          <p className="mt-2 text-xs text-primary-dark/70">
             Match confidence: {titleCase(result.matchConfidence)}
             {result.matchNote ? ` — ${result.matchNote}` : ''}
-          </span>
+          </p>
         </div>
       </div>
 
-      <div className={styles.quotes}>
-        {quotes.length ? (
-          quotes.map((quote) => (
-            <QuoteRow
-              key={`${quote.providerId}-${quote.providerSlug}`}
-              quote={quote}
-              isBest={result.bestQuote?.providerId === quote.providerId}
-            />
-          ))
-        ) : (
-          <div className={styles.empty}>No provider returned a usable quote.</div>
-        )}
-      </div>
+      {quotes.length ? (
+        <>
+          <ComparisonTable result={result} quotes={quotes} />
+          <div className="grid gap-4 lg:hidden">
+            {quotes.map((quote) => (
+              <QuoteCard
+                key={`${quote.providerId}-${quote.providerSlug}`}
+                quote={quote}
+                isBest={isBestQuote(result, quote)}
+              />
+            ))}
+          </div>
+        </>
+      ) : (
+        <div className="rounded-3xl border border-dashed border-line bg-surface-alt/60 p-8 text-center text-sm text-ink-soft">
+          No provider returned a usable quote.
+        </div>
+      )}
     </div>
   );
 }

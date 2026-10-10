@@ -1,15 +1,24 @@
 'use client';
 
 import Link from 'next/link';
-import { Card } from '@/components/ui/Card';
-import { Badge, DietBadge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { Heart, Plus } from 'lucide-react';
+import { DietBadge } from '@/components/ui/Badge';
+import { FoodImage } from '@/components/food/FoodImage';
 import { formatCurrency } from '@/lib/format';
 import { useAddToCart } from '@/hooks/useCart';
 import type { FoodItemSummary, SearchFoodItem } from '@/types';
-import styles from './food.module.css';
 
 type Item = FoodItemSummary | SearchFoodItem;
+
+interface FoodCardProps {
+  item: Item;
+  showCompare?: boolean;
+  quantity?: number;
+  variant?: 'grid' | 'rail';
+  priority?: boolean;
+  isFavorite?: boolean;
+  onToggleFavorite?: (foodItemId: string) => void;
+}
 
 function hasMinPrice(item: Item): item is SearchFoodItem {
   return 'minPrice' in item;
@@ -19,67 +28,100 @@ export function FoodCard({
   item,
   showCompare = true,
   quantity = 1,
-}: {
-  item: Item;
-  showCompare?: boolean;
-  quantity?: number;
-}) {
+  variant = 'grid',
+  priority = false,
+  isFavorite = false,
+  onToggleFavorite,
+}: FoodCardProps) {
   const addToCart = useAddToCart();
   const minPrice = hasMinPrice(item) ? item.minPrice : null;
   const providerCount = hasMinPrice(item) ? item.providerCount : 0;
+  const compareHref = `/compare?q=${encodeURIComponent(item.displayName)}`;
 
   return (
-    <Card hover className={styles.card}>
-      <div className={styles.media}>
-        <div className={styles.mediaBadges}>
+    <article
+      className={[
+        'group relative flex flex-col overflow-hidden rounded-3xl border border-line bg-surface shadow-sm',
+        'transition duration-200 hover:-translate-y-1 hover:shadow-md',
+        variant === 'rail' ? 'w-[270px] shrink-0 snap-start sm:w-[300px]' : 'h-full',
+      ].join(' ')}
+    >
+      <div className="relative aspect-[4/3] overflow-hidden bg-surface-alt">
+        <Link href={compareHref} aria-label={`Compare prices for ${item.displayName}`}>
+          <FoodImage
+            src={item.imageUrl}
+            alt={item.displayName}
+            category={item.category}
+            seed={item.id}
+            priority={priority}
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+          />
+        </Link>
+        <div className="pointer-events-none absolute left-3 top-3 flex items-center gap-2">
           <DietBadge dietaryType={item.dietaryType} />
         </div>
-        {item.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={item.imageUrl} alt={item.displayName} loading="lazy" />
-        ) : (
-          <span aria-hidden>🍽️</span>
-        )}
+        {onToggleFavorite ? (
+          <button
+            type="button"
+            onClick={() => onToggleFavorite(item.id)}
+            aria-label={isFavorite ? 'Remove from wishlist' : 'Save to wishlist'}
+            aria-pressed={isFavorite}
+            className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full border border-line bg-surface/90 text-ink-soft shadow-sm backdrop-blur transition hover:text-primary"
+          >
+            <Heart
+              className="h-4 w-4"
+              fill={isFavorite ? 'currentColor' : 'none'}
+              color={isFavorite ? 'var(--color-primary)' : 'currentColor'}
+            />
+          </button>
+        ) : null}
       </div>
-      <div className={styles.body}>
-        <p className={styles.title}>{item.displayName}</p>
-        <p className={styles.subtitle}>
+
+      <div className="flex flex-1 flex-col gap-2 p-4">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
           {item.category}
           {item.portionSize ? ` · ${item.portionSize}` : ''}
         </p>
-        <div className={styles.metaRow}>
+        <h3 className="line-clamp-2 text-base font-semibold leading-snug text-ink">
+          {item.displayName}
+        </h3>
+        {item.description ? (
+          <p className="line-clamp-2 text-sm text-ink-soft">{item.description}</p>
+        ) : null}
+
+        <div className="mt-auto flex items-end justify-between gap-3 pt-2">
           {minPrice != null ? (
-            <span className={styles.price}>
-              <span className={styles.priceFrom}>
-                from · {providerCount} provider{providerCount === 1 ? '' : 's'}
-              </span>
-              {formatCurrency(minPrice)}
-            </span>
+            <div>
+              <p className="text-[11px] uppercase tracking-wide text-muted">
+                from · {providerCount} platform{providerCount === 1 ? '' : 's'}
+              </p>
+              <p className="text-xl font-bold text-ink">{formatCurrency(minPrice)}</p>
+            </div>
           ) : (
-            <span className={styles.subtitle}>Price varies by provider</span>
+            <p className="text-sm text-ink-soft">Price varies by provider</p>
           )}
-          {providerCount > 1 ? <Badge tone="info">{providerCount} offers</Badge> : null}
         </div>
-        <div className={styles.actions}>
-          <Button
-            size="sm"
-            loading={addToCart.isPending}
-            onClick={() => addToCart.mutate({ foodItemId: item.id, quantity })}
-          >
-            Add to cart
-          </Button>
+
+        <div className="mt-2 flex items-center gap-2">
           {showCompare ? (
             <Link
-              href={`/compare?q=${encodeURIComponent(item.displayName)}`}
-              style={{ flex: 1 }}
+              href={compareHref}
+              className="inline-flex flex-1 items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-dark"
             >
-              <Button variant="secondary" size="sm" block>
-                Compare
-              </Button>
+              Compare prices
             </Link>
           ) : null}
+          <button
+            type="button"
+            onClick={() => addToCart.mutate({ foodItemId: item.id, quantity })}
+            disabled={addToCart.isPending}
+            aria-label={`Add ${item.displayName} to cart`}
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-line bg-surface text-ink transition hover:border-primary hover:text-primary disabled:opacity-60"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
         </div>
       </div>
-    </Card>
+    </article>
   );
 }

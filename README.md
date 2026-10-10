@@ -20,6 +20,21 @@ This is a full-stack monorepo:
 
 ---
 
+## Public site vs. protected app
+
+The web app is split into three route groups:
+
+| Group | Routes | Access |
+| --- | --- | --- |
+| `(marketing)` | `/`, `/about`, `/contact`, `/privacy`, `/terms` | Public, minimal landing experience |
+| `(auth)` | `/login`, `/register`, `/forgot-password`, `/reset-password` | Public, animated typography + secure forms |
+| `(app)` | `/dashboard`, `/search`, `/restaurants`, `/compare`, `/offers`, `/cart`, `/checkout`, `/orders`, `/profile`, `/admin` | Requires authentication |
+
+The public homepage intentionally shows **only** a hero, a short "how it works" section and a
+footer — no dashboard, private data, or internal tools. Every feature page lives behind the
+protected `(app)` shell (sidebar + top bar + mobile drawer) and is additionally enforced on the
+backend for every API call.
+
 ## Features
 
 - **Price comparison** — one query → quotes from every enabled provider, ranked by delivered total, with a potential-savings summary.
