@@ -14,7 +14,7 @@ export class CreateOrderDto {
   @IsMongoId()
   addressId?: string;
 
-  @ApiPropertyOptional({ example: 'Bengaluru, Karnataka' })
+  @ApiPropertyOptional({ example: 'Chennai, Tamil Nadu' })
   @IsOptional()
   @IsString()
   @MaxLength(120)

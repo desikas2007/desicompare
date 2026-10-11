@@ -161,8 +161,17 @@ export class ProviderRegistryService implements OnModuleInit {
   }
 
   async setEnabled(idOrSlug: string, enabled: boolean): Promise<ProviderSummary> {
+    return this.updateProvider(idOrSlug, { enabled });
+  }
+
+  async updateProvider(
+    idOrSlug: string,
+    patch: { enabled?: boolean; integrationMode?: IntegrationMode; statusNote?: string },
+  ): Promise<ProviderSummary> {
     const provider = await this.findProvider(idOrSlug);
-    provider.enabled = enabled;
+    if (patch.enabled !== undefined) provider.enabled = patch.enabled;
+    if (patch.integrationMode !== undefined) provider.integrationMode = patch.integrationMode;
+    if (patch.statusNote !== undefined) provider.statusNote = patch.statusNote;
     await provider.save();
     await this.reload();
     return this.toSummary(provider);

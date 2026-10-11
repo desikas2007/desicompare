@@ -27,8 +27,8 @@ export class AdminController {
   }
 
   @Patch('providers/:id')
-  setProvider(@Param('id') id: string, @Body() dto: UpdateProviderDto) {
-    return this.registry.setEnabled(id, dto.enabled ?? false);
+  updateProvider(@Param('id') id: string, @Body() dto: UpdateProviderDto) {
+    return this.registry.updateProvider(id, dto);
   }
 
   @Patch('offers/:id/status')

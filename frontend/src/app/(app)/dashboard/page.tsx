@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { Sparkles } from 'lucide-react';
+import { MapPin, Sparkles } from 'lucide-react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useDiscovery } from '@/hooks/useDiscovery';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -13,19 +13,22 @@ import { FoodSearch } from '@/components/food/FoodSearch';
 import { FoodCategoryNav } from '@/components/food/FoodCategoryNav';
 import { FoodSection } from '@/components/food/FoodSection';
 import { FoodGrid } from '@/components/food/FoodGrid';
+import { POPULAR_SEARCHES } from '@/lib/popular';
 import { categoryEmoji, timeOfDayGreeting } from '@/lib/imagery';
 
 const FALLBACK_CATEGORIES = [
   'Biryani',
+  'Dosa',
+  'Chettinad',
+  'Idli',
+  'Parotta',
   'Pizza',
-  'South Indian',
-  'Momos',
   'Noodles',
-  'Fried Rice',
-  'Burgers',
-  'Beverages',
-  'Desserts',
+  'Filter Coffee',
+  'Sweets',
 ];
+
+const TN_CITIES = ['Chennai', 'Coimbatore', 'Madurai', 'Trichy', 'Dindigul', 'Ambur', 'Karaikudi', 'Ooty'];
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -75,7 +78,48 @@ export default function DashboardPage() {
         <div className="max-w-2xl">
           <FoodSearch value={query} onChange={setQuery} />
         </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted">
+            Popular right now
+          </span>
+          {POPULAR_SEARCHES.slice(0, 6).map((term) => (
+            <button
+              key={term}
+              type="button"
+              onClick={() => setQuery(term)}
+              className="inline-flex items-center gap-1.5 rounded-pill border border-line bg-surface px-3 py-1.5 text-xs font-semibold text-ink-soft transition hover:border-primary/40 hover:text-primary"
+            >
+              {term}
+            </button>
+          ))}
+        </div>
       </header>
+
+      <div className="flex flex-col gap-3 rounded-3xl border border-primary/20 bg-primary-soft p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+        <div className="flex items-center gap-3">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-primary/15 text-primary-dark">
+            <MapPin className="h-5 w-5" />
+          </span>
+          <div>
+            <p className="text-sm font-bold text-ink">Now tracking Tamil Nadu</p>
+            <p className="text-xs text-ink-soft">
+              From street-side darshinis to five-star hotels — prices compared on Zomato, Swiggy and
+              EatSure.
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {TN_CITIES.map((city) => (
+            <Link
+              key={city}
+              href={`/restaurants?q=${encodeURIComponent(city)}`}
+              className="rounded-full bg-surface px-3 py-1 text-xs font-semibold text-ink-soft transition hover:text-primary"
+            >
+              {city}
+            </Link>
+          ))}
+        </div>
+      </div>
 
       <FoodCategoryNav
         categories={discovery.categories}

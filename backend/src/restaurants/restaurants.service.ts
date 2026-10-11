@@ -66,7 +66,7 @@ export class RestaurantsService {
     const filter: FilterQuery<Restaurant> = { isActive: true };
     if (query.q) {
       const regex = new RegExp(normalizeName(query.q), 'i');
-      filter.$or = [{ normalizedName: regex }, { cuisine: regex }];
+      filter.$or = [{ normalizedName: regex }, { cuisine: regex }, { serviceArea: regex }];
     }
     if (query.cuisine) {
       filter.cuisine = new RegExp(normalizeName(query.cuisine), 'i');

@@ -3,7 +3,7 @@ import { Transform } from 'class-transformer';
 import { IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CheckoutQuoteDto {
-  @ApiPropertyOptional({ example: 'Bengaluru, Karnataka' })
+  @ApiPropertyOptional({ example: 'Chennai, Tamil Nadu' })
   @IsOptional()
   @IsString()
   @MaxLength(120)

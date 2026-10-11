@@ -56,9 +56,10 @@ backend for every API call.
 # 1. Install dependencies (npm workspaces)
 npm install
 
-# 2. Configure environment
-#    Copy the example and adjust values (MongoDB URI, secrets, ...)
-cp .env.example .env
+# 2. Configure environment (no example file is committed — see docs/SETUP_GUIDE.md)
+#    Create `backend/.env` with the documented variables (MongoDB URI, secrets).
+#    A root `.env` is only needed if you use `docker compose` for interpolation.
+#    All env files are gitignored, so nothing is ever pushed to GitHub.
 
 # 3. Build shared types (required before running the apps)
 npm run build:shared

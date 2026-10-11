@@ -46,7 +46,7 @@ export class CreateAddressDto {
   @Transform(trim)
   addressLine2?: string;
 
-  @ApiProperty({ example: 'Bengaluru' })
+  @ApiProperty({ example: 'Chennai' })
   @IsString()
   @Length(1, 80)
   @Transform(trim)

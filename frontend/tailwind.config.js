@@ -75,8 +75,8 @@ module.exports = {
 };
 
 // Tailwind treats `<alpha-value>` as a placeholder it fills in with the opacity
-// modifier (defaulting to 1), so wrapping a CSS variable this way keeps both
-// solid colors and `/opacity` variants working.
+// modifier (defaulting to 1). `color-mix()` needs a valid <percentage>, so the
+// unitless value must be converted via `calc(<alpha-value> * 100%)`.
 function withAlpha(cssVariable) {
-  return `color-mix(in srgb, var(${cssVariable}) <alpha-value>, transparent)`;
+  return `color-mix(in srgb, var(${cssVariable}) calc(<alpha-value> * 100%), transparent)`;
 }

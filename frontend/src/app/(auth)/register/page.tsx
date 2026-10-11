@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { Button } from '@/components/ui/Button';
 import { Field, Input } from '@/components/ui/Form';
@@ -14,14 +14,30 @@ import { PasswordStrength } from '@/components/auth/PasswordStrength';
 import { ApiError } from '@/lib/api-client';
 import { registerSchema, RegisterValues } from '@/lib/validation';
 
+const SIGN_IN_URL = '/login?registered=1';
+
 export default function RegisterPage() {
   const router = useRouter();
-  const { register: registerUser } = useAuth();
+  const { register: registerUser, logout } = useAuth();
   const [formError, setFormError] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    if (!submitted) return;
+    const timer = window.setTimeout(() => router.replace(SIGN_IN_URL), 3000);
+    return () => window.clearTimeout(timer);
+  }, [submitted, router]);
 
   const form = useForm<RegisterValues>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { name: '', email: '', password: '', mobile: '', acceptedTerms: false },
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      mobile: '',
+      acceptedTerms: false,
+    },
   });
 
   const password = form.watch('password');
@@ -34,14 +50,46 @@ export default function RegisterPage() {
         name: values.name,
         email: values.email,
         password: values.password,
+        confirmPassword: values.confirmPassword,
         mobile: values.mobile || undefined,
+        acceptTerms: values.acceptedTerms,
       });
-      router.replace('/dashboard');
+      try {
+        // Registration succeeds server-side; sign the temporary session out so
+        // the user completes the intended "sign in" flow on the login page.
+        await logout();
+      } catch {
+        // Best-effort: the account is already created.
+      }
+      setSubmitted(true);
     } catch (error) {
       setFormError(
         error instanceof ApiError ? error.message : 'Registration failed. Please try again.',
       );
     }
+  }
+
+  if (submitted) {
+    return (
+      <div className="rounded-lg border border-line bg-surface p-7 text-center shadow-md sm:p-8">
+        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-success-soft text-success">
+          <CheckCircle2 size={22} />
+        </span>
+        <h1 className="mt-4 text-xl font-bold text-ink">Account created successfully</h1>
+        <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+          Your account is ready. Sign in with your new credentials to start comparing prices.
+        </p>
+        <Link
+          href={SIGN_IN_URL}
+          className="mt-6 inline-flex items-center justify-center rounded-pill bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-dark"
+        >
+          Go to sign in
+        </Link>
+        <p className="mt-4 text-xs text-muted" aria-live="polite">
+          Redirecting to the sign-in page…
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -102,6 +150,19 @@ export default function RegisterPage() {
             {...form.register('password')}
           />
           <PasswordStrength password={password} />
+        </Field>
+
+        <Field
+          label="Confirm password"
+          htmlFor="reg-confirm"
+          error={form.formState.errors.confirmPassword?.message}
+        >
+          <PasswordInput
+            id="reg-confirm"
+            autoComplete="new-password"
+            invalid={!!form.formState.errors.confirmPassword}
+            {...form.register('confirmPassword')}
+          />
         </Field>
 
         <label className="flex items-start gap-2 text-sm text-ink-soft">

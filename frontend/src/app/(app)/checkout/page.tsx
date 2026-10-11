@@ -22,7 +22,7 @@ export default function CheckoutPage() {
   const queryClient = useQueryClient();
   const cart = useCart();
 
-  const [location, setLocation] = useState('Bengaluru, Karnataka');
+  const [location, setLocation] = useState('Chennai, Tamil Nadu');
   const [addressId, setAddressId] = useState<string>('');
   const [contactName, setContactName] = useState(user?.name ?? '');
   const [contactPhone, setContactPhone] = useState('');

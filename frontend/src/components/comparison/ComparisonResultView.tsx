@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronRight, Clock, Minus, TrendingDown } from 'lucide-react';
+import { ChevronRight, Clock, ExternalLink, Minus, TrendingDown } from 'lucide-react';
 import { Badge, DemoBadge } from '@/components/ui/Badge';
 import { formatCurrency, formatMinutes, titleCase } from '@/lib/format';
 import { OrderPlatformButton } from '@/components/comparison/OrderPlatformButton';
@@ -53,6 +53,37 @@ function isBestQuote(result: ComparisonResult, quote: ProviderQuote): boolean {
   );
 }
 
+/**
+ * Provider name that links out to the provider's page for this restaurant.
+ * The URL always comes from the backend (`officialOrderUrl`), never guessed.
+ * Opens in a new tab so users can go straight to the provider app.
+ */
+function ProviderNameLink({ quote, tight }: { quote: ProviderQuote; tight?: boolean }) {
+  const name = (
+    <span className="inline-flex items-center gap-1">
+      {quote.providerName}
+      {quote.officialOrderUrl ? <ExternalLink className="h-3.5 w-3.5" /> : null}
+    </span>
+  );
+
+  if (!quote.officialOrderUrl) return <span>{name}</span>;
+
+  return (
+    <a
+      href={quote.officialOrderUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={[
+        'group inline-flex items-center gap-1 transition',
+        tight ? 'text-base font-bold text-ink hover:text-primary' : 'text-xs font-normal hover:underline',
+      ].join(' ')}
+      title={`Open ${quote.providerName} in a new tab`}
+    >
+      {name}
+    </a>
+  );
+}
+
 /* ----------------------------- Desktop table ---------------------------- */
 
 function ComparisonTable({ result, quotes }: { result: ComparisonResult; quotes: ProviderQuote[] }) {
@@ -80,7 +111,7 @@ function ComparisonTable({ result, quotes }: { result: ComparisonResult; quotes:
                     ].join(' ')}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="text-base font-bold text-ink">{quote.providerName}</span>
+                      <ProviderNameLink quote={quote} tight />
                       {best ? <Badge tone="success">Best price</Badge> : null}
                     </div>
                     <p className="mt-1 text-xs font-normal text-ink-soft">{quote.restaurantName}</p>
@@ -190,7 +221,7 @@ function QuoteCard({ quote, isBest }: { quote: ProviderQuote; isBest: boolean })
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-base font-bold text-ink">{quote.providerName}</span>
+            <ProviderNameLink quote={quote} tight />
             {isBest ? <Badge tone="success">Best price</Badge> : null}
           </div>
           <p className="mt-1 text-xs text-ink-soft">
@@ -263,7 +294,7 @@ export function ComparisonResultView({ result }: { result: ComparisonResult }) {
           </span>
           {result.bestQuote ? (
             <>
-              <p className="mt-2 text-lg font-bold text-ink">{result.bestQuote.providerName}</p>
+              <ProviderNameLink quote={result.bestQuote} tight />
               <p className="text-sm text-ink-soft">
                 {result.bestQuote.restaurantName} · {result.bestQuote.foodName} × {result.quantity}
               </p>

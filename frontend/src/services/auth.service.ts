@@ -10,7 +10,9 @@ export interface RegisterInput {
   name: string;
   email: string;
   password: string;
+  confirmPassword: string;
   mobile?: string;
+  acceptTerms: boolean;
 }
 
 export const authService = {
@@ -49,7 +51,7 @@ export const authService = {
   async resetPassword(token: string, password: string): Promise<{ message: string }> {
     return api.post<{ message: string }>(
       '/auth/reset-password',
-      { token, password },
+      { token, password, confirmPassword: password },
       { auth: false },
     );
   },

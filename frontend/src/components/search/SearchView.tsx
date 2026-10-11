@@ -12,6 +12,7 @@ import { searchService } from '@/services/search.service';
 import { providerService } from '@/services/provider.service';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useFavoriteFoodIds, useToggleFavorite } from '@/hooks/useFavorites';
+import { POPULAR_SEARCHES } from '@/lib/popular';
 import type { DietaryType, SearchFilters } from '@/types';
 
 const DIETARY: Array<{ value: DietaryType | ''; label: string }> = [
@@ -102,6 +103,21 @@ export function SearchView() {
         </div>
         <div className="max-w-2xl">
           <FoodSearch value={query} onChange={updateQuery} autoFocus />
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted">
+            Popular in Tamil Nadu
+          </span>
+          {POPULAR_SEARCHES.map((term) => (
+            <button
+              key={term}
+              type="button"
+              onClick={() => updateQuery(term)}
+              className="inline-flex items-center gap-1.5 rounded-pill border border-line bg-surface px-3 py-1.5 text-xs font-semibold text-ink-soft transition hover:border-primary/40 hover:text-primary"
+            >
+              {term}
+            </button>
+          ))}
         </div>
       </header>
 

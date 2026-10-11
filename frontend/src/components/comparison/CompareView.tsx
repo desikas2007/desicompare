@@ -18,7 +18,7 @@ const QUANTITY_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 export function CompareView() {
   const params = useSearchParams();
   const [query, setQuery] = useState(params.get('q') ?? '');
-  const [location, setLocation] = useState('Bengaluru, Karnataka');
+  const [location, setLocation] = useState('Chennai, Tamil Nadu');
   const [quantity, setQuantity] = useState(1);
   const [selected, setSelected] = useState<string[]>([]);
   const [formError, setFormError] = useState<string | null>(null);

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { Button } from '@/components/ui/Button';
 import { Field, Input } from '@/components/ui/Form';
@@ -27,6 +27,7 @@ function LoginForm() {
   const { login } = useAuth();
   const [formError, setFormError] = useState<string | null>(null);
   const next = safeNext(params.get('next'));
+  const justRegistered = params.get('registered') === '1';
 
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
@@ -45,6 +46,16 @@ function LoginForm() {
 
   return (
     <div className="rounded-lg border border-line bg-surface p-7 shadow-md sm:p-8">
+      {justRegistered ? (
+        <div
+          role="status"
+          className="mb-5 flex items-start gap-2 rounded-md border border-success/30 bg-success-soft px-3 py-2 text-sm text-success"
+        >
+          <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
+          <span>Account created successfully. Please sign in to continue.</span>
+        </div>
+      ) : null}
+
       <h1 className="text-2xl font-bold tracking-tight text-ink">Welcome back</h1>
       <p className="mt-1 text-sm text-ink-soft">Sign in to continue to your dashboard.</p>
 

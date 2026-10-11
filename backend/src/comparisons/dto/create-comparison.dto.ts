@@ -18,7 +18,7 @@ export class CreateComparisonDto {
   @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
   query!: string;
 
-  @ApiPropertyOptional({ example: 'Bengaluru, Karnataka', default: 'default' })
+  @ApiPropertyOptional({ example: 'Chennai, Tamil Nadu', default: 'default' })
   @IsOptional()
   @IsString()
   @MaxLength(120)

@@ -5,22 +5,29 @@ export const loginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
-export const registerSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters').max(120),
-  email: z.string().min(1, 'Email is required').email('Enter a valid email'),
-  password: z
-    .string()
-    .min(8, 'Use at least 8 characters')
-    .max(72, 'Password is too long'),
-  mobile: z
-    .string()
-    .regex(/^[+0-9\s-]{6,20}$/, 'Enter a valid phone number')
-    .optional()
-    .or(z.literal('')),
-  acceptedTerms: z.boolean().refine((value) => value === true, {
-    message: 'You must accept the Terms and Privacy Policy',
-  }),
-});
+export const registerSchema = z
+  .object({
+    name: z.string().min(2, 'Name must be at least 2 characters').max(120),
+    email: z.string().min(1, 'Email is required').email('Enter a valid email'),
+    password: z
+      .string()
+      .min(8, 'Use at least 8 characters')
+      .max(72, 'Password is too long')
+      .regex(/(?=.*[A-Za-z])(?=.*\d)/, 'Password must contain at least one letter and one number'),
+    confirmPassword: z.string().min(1, 'Confirm your password'),
+    mobile: z
+      .string()
+      .regex(/^[+0-9\s-]{6,20}$/, 'Enter a valid phone number')
+      .optional()
+      .or(z.literal('')),
+    acceptedTerms: z.boolean().refine((value) => value === true, {
+      message: 'You must accept the Terms and Privacy Policy',
+    }),
+  })
+  .refine((values) => values.password === values.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
 
 export const addressSchema = z.object({
   label: z.string().min(1, 'Label is required').max(40),

@@ -39,7 +39,7 @@ const MAX_SECTIONS = 6;
 export function useDiscovery(): DiscoveryState {
   const query = useQuery({
     queryKey: ['discovery'],
-    queryFn: () => searchService.search({ page: 1, limit: 60, sort: 'relevance' }),
+    queryFn: () => searchService.search({ page: 1, limit: 120, sort: 'relevance' }),
     staleTime: 60_000,
   });
 

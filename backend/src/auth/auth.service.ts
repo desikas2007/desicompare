@@ -120,7 +120,7 @@ export class AuthService {
     if (user) {
       const token = this.tokens.signPasswordResetToken({ id: user.id, email: user.email });
       const frontend = this.config.get<string>('frontendUrl');
-      const link = `${frontend}/auth?mode=reset&token=${token}`;
+      const link = `${frontend}/reset-password?token=${token}`;
       await this.mail.send(
         user.email,
         'Reset your FoodCompare password',
@@ -199,12 +199,11 @@ export class AuthService {
   }
 
   private async sendVerificationEmail(userId: string, email: string): Promise<void> {
-    const token = this.tokens.signPasswordResetToken({ id: userId, email });
     const frontend = this.config.get<string>('frontendUrl');
     await this.mail.send(
       email,
       'Verify your FoodCompare email',
-      `Confirm your email: ${frontend}/auth?mode=verify&token=${token}`,
+      `Confirm your email: ${frontend}/login?verified=1`,
     );
   }
 }
