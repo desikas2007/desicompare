@@ -11,7 +11,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
-import { DietaryType } from '@foodcompare/shared-types';
+import { DietaryType, MealType } from '@foodcompare/shared-types';
 import { PaginationQueryDto } from '../../common/dto/pagination.dto';
 
 export const SEARCH_SORTS = [
@@ -53,6 +53,11 @@ export class SearchQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsEnum(DietaryType)
   dietaryType?: DietaryType;
+
+  @ApiPropertyOptional({ enum: MealType })
+  @IsOptional()
+  @IsEnum(MealType)
+  mealType?: MealType;
 
   @ApiPropertyOptional({ minimum: 0 })
   @IsOptional()

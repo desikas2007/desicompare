@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Schema as MongooseSchema, Types, HydratedDocument } from 'mongoose';
-import { DietaryType } from '@foodcompare/shared-types';
+import { DietaryType, MealType } from '@foodcompare/shared-types';
 
 export type FoodItemDocument = HydratedDocument<FoodItem>;
 
@@ -44,6 +44,9 @@ export class FoodItem {
 
   @Prop({ type: [FoodVariant], default: [] })
   variants!: FoodVariant[];
+
+  @Prop({ type: [String], enum: Object.values(MealType), default: [], index: true })
+  mealTypes!: MealType[];
 
   @Prop({ default: true })
   isActive!: boolean;

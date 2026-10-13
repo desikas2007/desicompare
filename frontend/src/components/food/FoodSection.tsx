@@ -14,6 +14,8 @@ interface FoodSectionProps {
   showFavorites?: boolean;
   favoriteIds?: Set<string>;
   onToggleFavorite?: (foodItemId: string) => void;
+  /** Prefix for per-item detail links, e.g. `/dishes` → `/dishes/<id>`. */
+  detailHrefBase?: string;
 }
 
 export function FoodSection({
@@ -24,6 +26,7 @@ export function FoodSection({
   showFavorites = false,
   favoriteIds,
   onToggleFavorite,
+  detailHrefBase,
 }: FoodSectionProps) {
   if (items.length === 0) return null;
 
@@ -53,6 +56,7 @@ export function FoodSection({
             variant="rail"
             isFavorite={showFavorites ? favoriteIds?.has(item.id) ?? false : false}
             onToggleFavorite={showFavorites ? onToggleFavorite : undefined}
+            detailHref={detailHrefBase ? `${detailHrefBase}/${item.id}` : undefined}
           />
         ))}
       </div>

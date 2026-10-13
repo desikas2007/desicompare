@@ -18,6 +18,8 @@ interface FoodCardProps {
   priority?: boolean;
   isFavorite?: boolean;
   onToggleFavorite?: (foodItemId: string) => void;
+  /** When set, the image and title open this page (e.g. a dish detail view). */
+  detailHref?: string;
 }
 
 function hasMinPrice(item: Item): item is SearchFoodItem {
@@ -32,11 +34,13 @@ export function FoodCard({
   priority = false,
   isFavorite = false,
   onToggleFavorite,
+  detailHref,
 }: FoodCardProps) {
   const addToCart = useAddToCart();
   const minPrice = hasMinPrice(item) ? item.minPrice : null;
   const providerCount = hasMinPrice(item) ? item.providerCount : 0;
   const compareHref = `/compare?q=${encodeURIComponent(item.displayName)}`;
+  const primaryHref = detailHref ?? compareHref;
 
   return (
     <article
@@ -47,7 +51,7 @@ export function FoodCard({
       ].join(' ')}
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-surface-alt">
-        <Link href={compareHref} aria-label={`Compare prices for ${item.displayName}`}>
+        <Link href={primaryHref} aria-label={`View ${item.displayName}`}>
           <FoodImage
             src={item.imageUrl}
             alt={item.displayName}
@@ -83,7 +87,9 @@ export function FoodCard({
           {item.portionSize ? ` · ${item.portionSize}` : ''}
         </p>
         <h3 className="line-clamp-2 text-base font-semibold leading-snug text-ink">
-          {item.displayName}
+          <Link href={primaryHref} className="transition hover:text-primary">
+            {item.displayName}
+          </Link>
         </h3>
         {item.description ? (
           <p className="line-clamp-2 text-sm text-ink-soft">{item.description}</p>

@@ -1,7 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, Types } from 'mongoose';
-import { DietaryType, FoodItemSummary, RestaurantSummary } from '@foodcompare/shared-types';
+import {
+  DietaryType,
+  FoodItemSummary,
+  MealType,
+  RestaurantSummary,
+} from '@foodcompare/shared-types';
 import { ModelNames } from '../database/model-names';
 import { RestaurantDocument, Restaurant } from '../database/schemas/restaurant.schema';
 import { FoodItemDocument, FoodItem } from '../database/schemas/food-item.schema';
@@ -58,6 +63,7 @@ export class RestaurantsService {
         portionSize: v.portionSize,
         price: v.price ?? null,
       })),
+      mealTypes: (doc.mealTypes ?? []) as MealType[],
       isActive: doc.isActive,
     };
   }

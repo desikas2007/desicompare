@@ -11,6 +11,7 @@ export const searchService = {
         cuisine: filters.cuisine,
         provider: filters.provider,
         dietaryType: filters.dietaryType,
+        mealType: filters.mealType,
         minPrice: filters.minPrice,
         maxPrice: filters.maxPrice,
         minRating: filters.minRating,

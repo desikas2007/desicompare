@@ -14,9 +14,11 @@
  *        npm run seed:prod       (compiled, after build)
  */
 import mongoose from 'mongoose';
+import type { AnyBulkWriteOperation } from 'mongodb';
 import * as bcrypt from 'bcryptjs';
 import 'dotenv/config';
 
+import { MealType } from '@foodcompare/shared-types';
 import { ModelNames } from './model-names';
 import { normalizeName } from '../common/utils/normalize';
 import { ProviderSchema } from './schemas/provider.schema';
@@ -56,6 +58,45 @@ interface DishSeed {
   portionSize: string;
   price: number;
   description: string;
+  /** Optional explicit meal slots; inferred from name/category when omitted. */
+  mealTypes?: Array<'breakfast' | 'lunch' | 'dinner'>;
+}
+
+/**
+ * Derives the meal slots a dish belongs to from its name and category so the
+ * dishes menu can present Breakfast / Lunch / Dinner sections without hand
+ * tagging every seed row. Explicit `mealTypes` always win.
+ */
+function inferMealTypes(name: string, category: string): MealType[] {
+  const text = `${name} ${category}`.toLowerCase();
+  const types = new Set<MealType>();
+
+  if (
+    /(idli|dosa|uthappam|utaapam|pongal|upma|vada|poori|puri|appam|idiyappam|paniyaram|bonda|tiffin|kesari|badam milk|filter coffee|omelette|omelet|parotta|paratha|toast|pancake|muesli|poha|idiyapam)/.test(
+      text,
+    )
+  ) {
+    types.add(MealType.Breakfast);
+  }
+
+  if (
+    /(meals|thali|rice|biryani|puliyodarai|curd rice|sambar rice|poriyal|kootu|kuzhambu|rasam|fried rice|noodles|manchurian)/.test(
+      text,
+    )
+  ) {
+    types.add(MealType.Lunch);
+  }
+
+  if (
+    /(biryani|dosa|parotta|paratha|naan|roti|chapati|curry|masala|kebab|grill|bbq|tandoor|fried rice|noodles|manchurian|chilli|sukka|varuval|chettinad|seafood|fish|prawn|crab|pizza|burger|steak|thali|meals|65|lollipop|shawarma|kabsa|mandi|tikka|butter chicken|dal|paneer|korma|kurma)/.test(
+      text,
+    )
+  ) {
+    types.add(MealType.Dinner);
+  }
+
+  if (types.size === 0) types.add(MealType.Lunch);
+  return [...types];
 }
 
 const PROVIDERS: ProviderSeed[] = [
@@ -2878,14 +2919,1190 @@ const DISHES: DishSeed[] = [
     price: 90,
     description: 'Fresh filter kaapi.',
   },
+
+  // ============================================================ BREAKFAST
+  // ------------------------------------------------------------ Murugan Idli
+  {
+    restaurant: 'murugan',
+    name: 'Rava Idli (2 pcs)',
+    category: 'Idli',
+    dietaryType: 'veg',
+    portionSize: '2 pcs',
+    price: 55,
+    description: 'Soft semolina idlis with cashews and chutney.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'murugan',
+    name: 'Ghee Roast Idli (2 pcs)',
+    category: 'Idli',
+    dietaryType: 'veg',
+    portionSize: '2 pcs',
+    price: 70,
+    description: 'Idlis roasted in ghee until golden.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'murugan',
+    name: 'Kal Dosai',
+    category: 'Dosa',
+    dietaryType: 'veg',
+    portionSize: '1',
+    price: 65,
+    description: 'Soft, thick kal dosai with chutney.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'murugan',
+    name: 'Onion Uthappam',
+    category: 'Dosa',
+    dietaryType: 'veg',
+    portionSize: '1',
+    price: 85,
+    description: 'Uthappam studded with onion and green chilli.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'murugan',
+    name: 'Sweet Pongal',
+    category: 'Sweets',
+    dietaryType: 'veg',
+    portionSize: '1 plate',
+    price: 80,
+    description: 'Jaggery pongal with cashew and ghee.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'murugan',
+    name: 'Masala Tea',
+    category: 'Beverages',
+    dietaryType: 'veg',
+    portionSize: '120 ml',
+    price: 25,
+    description: 'Spiced ginger tea.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'murugan',
+    name: 'Tomato Rice',
+    category: 'South Indian Meals',
+    dietaryType: 'veg',
+    portionSize: '1 plate',
+    price: 90,
+    description: 'Tangy tomato rice with peanuts.',
+    mealTypes: ['lunch'],
+  },
+  {
+    restaurant: 'murugan',
+    name: 'Lemon Rice',
+    category: 'South Indian Meals',
+    dietaryType: 'veg',
+    portionSize: '1 plate',
+    price: 85,
+    description: 'Zesty lemon rice with curry leaves.',
+    mealTypes: ['lunch'],
+  },
+
+  // ----------------------------------------------------------- Saravana Bhavan
+  {
+    restaurant: 'saravana',
+    name: 'Kal Dosa',
+    category: 'Dosa',
+    dietaryType: 'veg',
+    portionSize: '1',
+    price: 80,
+    description: 'Soft thick dosa served with chutney.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'saravana',
+    name: 'Ragi Dosa',
+    category: 'Dosa',
+    dietaryType: 'veg',
+    portionSize: '1',
+    price: 110,
+    description: 'Healthy finger-millet dosa.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'saravana',
+    name: 'Pesarattu',
+    category: 'Dosa',
+    dietaryType: 'veg',
+    portionSize: '1',
+    price: 120,
+    description: 'Green gram dosa with a spoon of upma.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'saravana',
+    name: 'Rava Kesari',
+    category: 'Sweets',
+    dietaryType: 'veg',
+    portionSize: '1 piece',
+    price: 55,
+    description: 'Classic saffron rava kesari.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'saravana',
+    name: 'Semiya Payasam',
+    category: 'Desserts',
+    dietaryType: 'veg',
+    portionSize: '1 bowl',
+    price: 70,
+    description: 'Vermicelli milk payasam with nuts.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+  {
+    restaurant: 'saravana',
+    name: 'Sambar Vada',
+    category: 'Vada',
+    dietaryType: 'veg',
+    portionSize: '2 pcs',
+    price: 65,
+    description: 'Crisp vadas soaked in hot sambar.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'saravana',
+    name: 'Kara Kuzhambu Rice',
+    category: 'South Indian Meals',
+    dietaryType: 'veg',
+    portionSize: '1 plate',
+    price: 135,
+    description: 'Spicy tamarind kuzhambu over rice.',
+    mealTypes: ['lunch'],
+  },
+  {
+    restaurant: 'saravana',
+    name: 'Rasam Rice',
+    category: 'South Indian Meals',
+    dietaryType: 'veg',
+    portionSize: '1 plate',
+    price: 115,
+    description: 'Peppery rasam rice with ghee.',
+    mealTypes: ['lunch'],
+  },
+  {
+    restaurant: 'saravana',
+    name: 'Vathal Kuzhambu Rice',
+    category: 'South Indian Meals',
+    dietaryType: 'veg',
+    portionSize: '1 plate',
+    price: 130,
+    description: 'Tangy vathal kuzhambu rice.',
+    mealTypes: ['lunch'],
+  },
+
+  // ---------------------------------------------------------------- Rathna Café
+  {
+    restaurant: 'rathna',
+    name: 'Ven Pongal (Ghee)',
+    category: 'Pongal & Upma',
+    dietaryType: 'veg',
+    portionSize: '1 plate',
+    price: 75,
+    description: 'Ghee-laden pongal with pepper and cashew.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'rathna',
+    name: 'Rava Kesari',
+    category: 'Sweets',
+    dietaryType: 'veg',
+    portionSize: '1 piece',
+    price: 50,
+    description: 'Semolina kesari with ghee.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'rathna',
+    name: 'Masala Dosa',
+    category: 'Dosa',
+    dietaryType: 'veg',
+    portionSize: '1',
+    price: 95,
+    description: 'Crisp dosa with spiced potato masala.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'rathna',
+    name: 'Tomato Uthappam',
+    category: 'Dosa',
+    dietaryType: 'veg',
+    portionSize: '1',
+    price: 105,
+    description: 'Thick uthappam topped with tomato.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'rathna',
+    name: 'Kootu Rice',
+    category: 'South Indian Meals',
+    dietaryType: 'veg',
+    portionSize: '1 plate',
+    price: 120,
+    description: 'Lentil-and-vegetable kootu over rice.',
+    mealTypes: ['lunch'],
+  },
+  {
+    restaurant: 'rathna',
+    name: 'Mor Kuzhambu Rice',
+    category: 'South Indian Meals',
+    dietaryType: 'veg',
+    portionSize: '1 plate',
+    price: 125,
+    description: 'Cooling buttermilk kuzhambu rice.',
+    mealTypes: ['lunch'],
+  },
+
+  // --------------------------------------------------------- Adyar Ananda Bhavan
+  {
+    restaurant: 'a2b',
+    name: 'Podi Idli',
+    category: 'Idli',
+    dietaryType: 'veg',
+    portionSize: '4 pcs',
+    price: 85,
+    description: 'Idlis tossed in gunpowder podi and ghee.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'a2b',
+    name: 'Rava Dosa',
+    category: 'Dosa',
+    dietaryType: 'veg',
+    portionSize: '1',
+    price: 115,
+    description: 'Lacy rava dosa with chutneys.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'a2b',
+    name: 'Mysore Bonda',
+    category: 'Street Food',
+    dietaryType: 'veg',
+    portionSize: '4 pcs',
+    price: 70,
+    description: 'Fluffy bondas with coconut chutney.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'a2b',
+    name: 'Filter Coffee (Double)',
+    category: 'Filter Coffee',
+    dietaryType: 'veg',
+    portionSize: '150 ml',
+    price: 45,
+    description: 'Extra-strong double filter kaapi.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'a2b',
+    name: 'Puliogare',
+    category: 'South Indian Meals',
+    dietaryType: 'veg',
+    portionSize: '1 plate',
+    price: 125,
+    description: 'Tamarind rice with roasted peanuts.',
+    mealTypes: ['lunch'],
+  },
+  {
+    restaurant: 'a2b',
+    name: 'Lemon Rice',
+    category: 'South Indian Meals',
+    dietaryType: 'veg',
+    portionSize: '1 plate',
+    price: 115,
+    description: 'Lemon rice with cashews.',
+    mealTypes: ['lunch'],
+  },
+
+  // --------------------------------------------------- Annapoorna Gowrishankar
+  {
+    restaurant: 'annapoorna',
+    name: 'Oats Upma',
+    category: 'Pongal & Upma',
+    dietaryType: 'veg',
+    portionSize: '1 plate',
+    price: 85,
+    description: 'Wholesome oats upma with vegetables.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'annapoorna',
+    name: 'Rava Kesari',
+    category: 'Sweets',
+    dietaryType: 'veg',
+    portionSize: '1 piece',
+    price: 55,
+    description: 'Ghee-rich rava kesari.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'annapoorna',
+    name: 'Poori Masala',
+    category: 'South Indian',
+    dietaryType: 'veg',
+    portionSize: '2 pcs',
+    price: 95,
+    description: 'Fluffy pooris with potato masala.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'annapoorna',
+    name: 'Kumbakonam Filter Coffee',
+    category: 'Filter Coffee',
+    dietaryType: 'veg',
+    portionSize: '120 ml',
+    price: 35,
+    description: 'Strong Kumbakonam-style kaapi.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'annapoorna',
+    name: 'Vegetable Biryani',
+    category: 'Biryani',
+    dietaryType: 'veg',
+    portionSize: '1 plate',
+    price: 180,
+    description: 'Aromatic vegetable dum biryani.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+
+  // ----------------------------------------------------------------- GRT Grand
+  {
+    restaurant: 'grt',
+    name: 'Masala Dosa',
+    category: 'Dosa',
+    dietaryType: 'veg',
+    portionSize: '1',
+    price: 150,
+    description: 'Crisp masala dosa, hotel-style.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'grt',
+    name: 'Poori Masala',
+    category: 'South Indian',
+    dietaryType: 'veg',
+    portionSize: '2 pcs',
+    price: 130,
+    description: 'Pooris with rich potato masala.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'grt',
+    name: 'Onion Uthappam',
+    category: 'Dosa',
+    dietaryType: 'veg',
+    portionSize: '1',
+    price: 155,
+    description: 'Thick uthappam with onion.',
+    mealTypes: ['breakfast'],
+  },
+  {
+    restaurant: 'grt',
+    name: 'Filter Coffee (Double)',
+    category: 'Filter Coffee',
+    dietaryType: 'veg',
+    portionSize: '150 ml',
+    price: 80,
+    description: 'Double-strength filter kaapi.',
+    mealTypes: ['breakfast'],
+  },
+
+  // ============================================================ LUNCH / MEALS
+  {
+    restaurant: 'chutneys',
+    name: 'Veg Fried Rice',
+    category: 'Fried Rice',
+    dietaryType: 'veg',
+    portionSize: '1 bowl',
+    price: 185,
+    description: 'Wok-tossed vegetable fried rice.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+  {
+    restaurant: 'chutneys',
+    name: 'Gobi Manchurian',
+    category: 'Indo-Chinese',
+    dietaryType: 'veg',
+    portionSize: '1 plate',
+    price: 195,
+    description: 'Crisp cauliflower in manchurian sauce.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+  {
+    restaurant: 'chutneys',
+    name: 'Onion Dosa',
+    category: 'Dosa',
+    dietaryType: 'veg',
+    portionSize: '1',
+    price: 145,
+    description: 'Dosa topped with caramelised onion.',
+    mealTypes: ['breakfast', 'dinner'],
+  },
+  {
+    restaurant: 'chutneys',
+    name: 'Veg Thali',
+    category: 'South Indian Meals',
+    dietaryType: 'veg',
+    portionSize: '1 thali',
+    price: 240,
+    description: 'Full vegetarian thali with curries and payasam.',
+    mealTypes: ['lunch'],
+  },
+
+  // ============================================================ DINNER
+  // ----------------------------------------------------------------- Buhari Hotel
+  {
+    restaurant: 'buhari',
+    name: 'Chicken Chettinad',
+    category: 'Chettinad',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 270,
+    description: 'Chicken in roasted chettinad masala.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+  {
+    restaurant: 'buhari',
+    name: 'Pepper Chicken',
+    category: 'Chettinad',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 260,
+    description: 'Dry pepper-tossed chicken.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'buhari',
+    name: 'Mutton Kola Urundai',
+    category: 'Chettinad',
+    dietaryType: 'non_veg',
+    portionSize: '6 pcs',
+    price: 290,
+    description: 'Spiced mutton meatballs, fried.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'buhari',
+    name: 'Chicken Kothu Parotta',
+    category: 'Parotta',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 190,
+    description: 'Chopped parotta with chicken and egg.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'buhari',
+    name: 'Egg Fried Rice',
+    category: 'Fried Rice',
+    dietaryType: 'non_veg',
+    portionSize: '1 bowl',
+    price: 170,
+    description: 'Egg fried rice with spring onion.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+
+  // --------------------------------------------------------------- Junior Kuppanna
+  {
+    restaurant: 'junior',
+    name: 'Nattu Kozhi Curry',
+    category: 'Chettinad',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 320,
+    description: 'Country chicken curry, peppery and rich.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+  {
+    restaurant: 'junior',
+    name: 'Mutton Kola Urundai',
+    category: 'Chettinad',
+    dietaryType: 'non_veg',
+    portionSize: '6 pcs',
+    price: 310,
+    description: 'Crisp mutton kola urundai.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'junior',
+    name: 'Chicken Chettinad',
+    category: 'Chettinad',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 300,
+    description: 'Chicken simmered in chettinad masala.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+  {
+    restaurant: 'junior',
+    name: 'Chicken 65 Boneless',
+    category: 'Chettinad',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 260,
+    description: 'Boneless chicken 65 with curry leaves.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'junior',
+    name: 'Mutton Biryani (Seeraga Samba)',
+    category: 'Biryani',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 400,
+    description: 'Seeraga samba mutton dum biryani.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+
+  // ------------------------------------------------------------ Dindigul Thalappakatti
+  {
+    restaurant: 'thalappakatti',
+    name: 'Chicken Chukka',
+    category: 'Chettinad',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 300,
+    description: 'Dry-roasted chicken chukka.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'thalappakatti',
+    name: 'Dindigul Chicken Curry',
+    category: 'Curries',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 290,
+    description: 'Dindigul-style chicken curry.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+  {
+    restaurant: 'thalappakatti',
+    name: 'Mutton Kola Urundai',
+    category: 'Chettinad',
+    dietaryType: 'non_veg',
+    portionSize: '6 pcs',
+    price: 320,
+    description: 'Spiced mutton kola urundai.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'thalappakatti',
+    name: 'Prawn Biryani',
+    category: 'Biryani',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 380,
+    description: 'Coastal prawn biryani.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+
+  // -------------------------------------------------------------- Anjappar Chettinad
+  {
+    restaurant: 'anjappar',
+    name: 'Chicken Chettinad',
+    category: 'Chettinad',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 320,
+    description: 'Classic chettinad chicken.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+  {
+    restaurant: 'anjappar',
+    name: 'Mutton Kola Urundai',
+    category: 'Chettinad',
+    dietaryType: 'non_veg',
+    portionSize: '6 pcs',
+    price: 330,
+    description: 'Fried mutton meatballs in masala.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'anjappar',
+    name: 'Crab Pepper Fry',
+    category: 'Seafood',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 460,
+    description: 'Pepper-tossed crab.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'anjappar',
+    name: 'Nattu Kozhi Biryani',
+    category: 'Biryani',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 360,
+    description: 'Country chicken biryani.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+
+  // ---------------------------------------------------------------------- Basha
+  {
+    restaurant: 'basha',
+    name: 'Chicken Curry Dosa',
+    category: 'Dosa',
+    dietaryType: 'non_veg',
+    portionSize: '1',
+    price: 170,
+    description: 'Dosa topped with chicken curry.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'basha',
+    name: 'Mutton Kola Urundai',
+    category: 'Chettinad',
+    dietaryType: 'non_veg',
+    portionSize: '6 pcs',
+    price: 300,
+    description: 'Spiced mutton kola urundai.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'basha',
+    name: 'Chicken Kabsa',
+    category: 'Arabic',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 300,
+    description: 'Spiced rice with roasted chicken.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+
+  // -------------------------------------------------------------------- Zaitoon
+  {
+    restaurant: 'zaitoon',
+    name: 'Chicken Alfaham',
+    category: 'BBQ',
+    dietaryType: 'non_veg',
+    portionSize: 'half',
+    price: 340,
+    description: 'Arabian-style chargrilled alfaham chicken.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'zaitoon',
+    name: 'Mutton Mandi',
+    category: 'Arabic',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 420,
+    description: 'Smoky mutton mandi rice.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+  {
+    restaurant: 'zaitoon',
+    name: 'Chicken Shish Taouk',
+    category: 'Arabic',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 330,
+    description: 'Garlic-herb chicken skewers.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'zaitoon',
+    name: 'Peri Peri Chicken',
+    category: 'BBQ',
+    dietaryType: 'non_veg',
+    portionSize: 'half',
+    price: 360,
+    description: 'Flame-grilled peri peri chicken.',
+    mealTypes: ['dinner'],
+  },
+
+  // --------------------------------------------------------------------- Fitoor
+  {
+    restaurant: 'fitoor',
+    name: 'Paneer Butter Masala',
+    category: 'North Indian',
+    dietaryType: 'veg',
+    portionSize: '1 plate',
+    price: 300,
+    description: 'Paneer in silky tomato-butter gravy.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+  {
+    restaurant: 'fitoor',
+    name: 'Chicken Changezi',
+    category: 'North Indian',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 360,
+    description: 'Rich Mughlai chicken changezi.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+  {
+    restaurant: 'fitoor',
+    name: 'Mutton Korma',
+    category: 'Mughlai',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 420,
+    description: 'Slow-cooked mutton korma.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'fitoor',
+    name: 'Roomali Roti',
+    category: 'Breads',
+    dietaryType: 'veg',
+    portionSize: '1 pc',
+    price: 60,
+    description: 'Thin handkerchief roti.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+
+  // ------------------------------------------------------------------ Domino's
+  {
+    restaurant: 'dominos',
+    name: 'Paneer Makhani Pizza (Medium)',
+    category: 'Pizza',
+    dietaryType: 'veg',
+    portionSize: 'Medium 10"',
+    price: 429,
+    description: 'Paneer in makhani sauce with cheese.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+  {
+    restaurant: 'dominos',
+    name: 'Veg Extravaganza (Medium)',
+    category: 'Pizza',
+    dietaryType: 'veg',
+    portionSize: 'Medium 10"',
+    price: 449,
+    description: 'Loaded veggie pizza.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+  {
+    restaurant: 'dominos',
+    name: 'Chicken Dominator (Medium)',
+    category: 'Pizza',
+    dietaryType: 'non_veg',
+    portionSize: 'Medium 10"',
+    price: 549,
+    description: 'Loaded chicken pizza.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'dominos',
+    name: 'Choco Mousse Cake',
+    category: 'Desserts',
+    dietaryType: 'veg',
+    portionSize: '1 pc',
+    price: 129,
+    description: 'Silky chocolate mousse cake.',
+    mealTypes: ['dinner'],
+  },
+
+  // ---------------------------------------------------------------- Chinese Wok
+  {
+    restaurant: 'chinesewok',
+    name: 'Schezwan Noodles',
+    category: 'Noodles',
+    dietaryType: 'veg',
+    portionSize: '1 bowl',
+    price: 200,
+    description: 'Fiery schezwan veg noodles.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+  {
+    restaurant: 'chinesewok',
+    name: 'Chicken Lollipop',
+    category: 'Indo-Chinese',
+    dietaryType: 'non_veg',
+    portionSize: '6 pcs',
+    price: 260,
+    description: 'Crisp chicken lollipops.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'chinesewok',
+    name: 'Egg Manchurian',
+    category: 'Indo-Chinese',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 220,
+    description: 'Fried egg balls in manchurian sauce.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'chinesewok',
+    name: 'Triple Schezwan Rice',
+    category: 'Fried Rice',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 290,
+    description: 'Rice, noodles and gravy, schezwan style.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+
+  // ---------------------------------------------------------------- ITC Grand Chola
+  {
+    restaurant: 'itc',
+    name: 'Dum Pukht Biryani',
+    category: 'Biryani',
+    dietaryType: 'non_veg',
+    portionSize: '1 portion',
+    price: 780,
+    description: 'Slow-cooked Awadhi dum biryani.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+  {
+    restaurant: 'itc',
+    name: 'Paneer Pasanda',
+    category: 'North Indian',
+    dietaryType: 'veg',
+    portionSize: '1 plate',
+    price: 560,
+    description: 'Stuffed paneer in a rich gravy.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+  {
+    restaurant: 'itc',
+    name: 'Lobster Thermidor',
+    category: 'Seafood',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 1450,
+    description: 'Grilled lobster in a creamy sauce.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'itc',
+    name: 'Bebinca',
+    category: 'Desserts',
+    dietaryType: 'veg',
+    portionSize: '1 slice',
+    price: 340,
+    description: 'Goan layered coconut dessert.',
+    mealTypes: ['dinner'],
+  },
+
+  // --------------------------------------------------------------- Taj Coromandel
+  {
+    restaurant: 'taj',
+    name: 'Narangi Biryani',
+    category: 'Biryani',
+    dietaryType: 'non_veg',
+    portionSize: '1 portion',
+    price: 780,
+    description: 'Citrus-scented Hyderabadi biryani.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+  {
+    restaurant: 'taj',
+    name: 'Murgh Musallam',
+    category: 'Mughlai',
+    dietaryType: 'non_veg',
+    portionSize: '1 portion',
+    price: 950,
+    description: 'Whole stuffed chicken, Mughlai style.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'taj',
+    name: 'Chettinad Chicken',
+    category: 'Chettinad',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 720,
+    description: 'Refined chettinad chicken.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+  {
+    restaurant: 'taj',
+    name: 'Elaneer Payasam',
+    category: 'Desserts',
+    dietaryType: 'veg',
+    portionSize: '1 bowl',
+    price: 320,
+    description: 'Tender-coconut payasam.',
+    mealTypes: ['dinner'],
+  },
+
+  // -------------------------------------------------------------- Muniyandi Vilas
+  {
+    restaurant: 'muniyandi',
+    name: 'Mutton Kola Urundai',
+    category: 'Chettinad',
+    dietaryType: 'non_veg',
+    portionSize: '6 pcs',
+    price: 330,
+    description: 'Spicy fried mutton meatballs.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'muniyandi',
+    name: 'Chicken Pepper Fry',
+    category: 'Chettinad',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 270,
+    description: 'Pepper-tossed chicken fry.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'muniyandi',
+    name: 'Parotta Mutton',
+    category: 'Parotta',
+    dietaryType: 'non_veg',
+    portionSize: '1 set',
+    price: 210,
+    description: 'Flaky parottas with mutton curry.',
+    mealTypes: ['dinner'],
+  },
+
+  // --------------------------------------------------------------- Chettinad Kadai
+  {
+    restaurant: 'kadai',
+    name: 'Nattu Kozhi Varuval',
+    category: 'Chettinad',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 340,
+    description: 'Country chicken varuval.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'kadai',
+    name: 'Mutton Kola Urundai',
+    category: 'Chettinad',
+    dietaryType: 'non_veg',
+    portionSize: '6 pcs',
+    price: 330,
+    description: 'Chettinad mutton kola urundai.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'kadai',
+    name: 'Prawn Pepper Fry',
+    category: 'Seafood',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 430,
+    description: 'Pepper-fried prawns.',
+    mealTypes: ['dinner'],
+  },
+
+  // ---------------------------------------------------------------- Amman Biryani
+  {
+    restaurant: 'amman',
+    name: 'Chicken Kothu Parotta',
+    category: 'Parotta',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 150,
+    description: 'Madurai-style kothu parotta.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'amman',
+    name: 'Mutton Kola Urundai',
+    category: 'Chettinad',
+    dietaryType: 'non_veg',
+    portionSize: '6 pcs',
+    price: 180,
+    description: 'Street-style mutton meatballs.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'amman',
+    name: 'Ambur Chicken Biryani',
+    category: 'Biryani',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 170,
+    description: 'Ambur-style chicken biryani.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+
+  // ------------------------------------------------------ Dindigul Vairamalai
+  {
+    restaurant: 'vairamalai',
+    name: 'Chicken Kothu Parotta',
+    category: 'Parotta',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 180,
+    description: 'Kothu parotta with chicken and egg.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'vairamalai',
+    name: 'Mutton Kola Urundai',
+    category: 'Chettinad',
+    dietaryType: 'non_veg',
+    portionSize: '6 pcs',
+    price: 320,
+    description: 'Dindigul mutton kola urundai.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'vairamalai',
+    name: 'Veg Biryani',
+    category: 'Biryani',
+    dietaryType: 'veg',
+    portionSize: '1 plate',
+    price: 240,
+    description: 'Seeraga samba veg biryani.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+
+  // ----------------------------------------------------------------- Star Biryani
+  {
+    restaurant: 'starambur',
+    name: 'Ambur Mutton Biryani',
+    category: 'Biryani',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 340,
+    description: 'Signature Ambur mutton biryani.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+  {
+    restaurant: 'starambur',
+    name: 'Chicken Kothu Parotta',
+    category: 'Parotta',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 160,
+    description: 'Ambur-style chicken kothu.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'starambur',
+    name: 'Mutton Kola Urundai',
+    category: 'Chettinad',
+    dietaryType: 'non_veg',
+    portionSize: '6 pcs',
+    price: 300,
+    description: 'Fried mutton kola urundai.',
+    mealTypes: ['dinner'],
+  },
+
+  // -------------------------------------------------------------------- The Savoy
+  {
+    restaurant: 'savoy',
+    name: 'Chicken Alfredo Pasta',
+    category: 'Continental',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 420,
+    description: 'Creamy chicken alfredo pasta.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'savoy',
+    name: 'Veg Lasagna',
+    category: 'Continental',
+    dietaryType: 'veg',
+    portionSize: '1 plate',
+    price: 380,
+    description: 'Baked vegetable lasagna.',
+    mealTypes: ['dinner'],
+  },
+  {
+    restaurant: 'savoy',
+    name: 'Fish Moilee',
+    category: 'Seafood',
+    dietaryType: 'non_veg',
+    portionSize: '1 plate',
+    price: 460,
+    description: 'Kerala coconut-milk fish moilee.',
+    mealTypes: ['lunch', 'dinner'],
+  },
+  {
+    restaurant: 'savoy',
+    name: 'Chocolate Brownie',
+    category: 'Desserts',
+    dietaryType: 'veg',
+    portionSize: '1 pc',
+    price: 200,
+    description: 'Warm chocolate brownie with sauce.',
+    mealTypes: ['dinner'],
+  },
 ];
 
 const PRICE_FACTORS: Record<string, number> = { swiggy: 1.0, zomato: 1.04, eatsure: 0.96 };
 
+const RETRYABLE_MONGO_ERRORS = new Set([
+  'MongoNetworkError',
+  'MongoNetworkTimeoutError',
+  'MongoServerSelectionError',
+  'MongoNotConnectedError',
+  'MongoExpiredSessionError',
+]);
+
+/**
+ * MongoDB Atlas (and flaky networks in general) occasionally resets pooled
+ * connections mid-run. These errors are transient: the driver rebuilds the pool
+ * and the same operation then succeeds, so the seed backs off and retries it.
+ */
+function isRetryableMongoError(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null) return false;
+  const name = (error as { name?: string }).name;
+  if (name && RETRYABLE_MONGO_ERRORS.has(name)) return true;
+  const labels = (error as { errorLabelSet?: Set<string> }).errorLabelSet;
+  return Boolean(labels && (labels.has('ResetPool') || labels.has('HandshakeError')));
+}
+
+async function withRetry<T>(label: string, operation: () => Promise<T>, attempts = 5): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      if (!isRetryableMongoError(error) || attempt === attempts) break;
+      const delay = Math.min(1000 * 2 ** (attempt - 1), 10000);
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(
+        `[seed] ${label} failed (attempt ${attempt}/${attempts}): ${message}. Retrying in ${delay}ms...`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+  throw lastError;
+}
+
+type SeedBulkOp = AnyBulkWriteOperation;
+
+/**
+ * Applies upserts in fixed-size unordered batches. Batching keeps the seed to a
+ * handful of round trips instead of thousands of sequential awaits, which both
+ * speeds it up dramatically and shrinks the window for a dropped connection.
+ */
+async function bulkWriteChunked<TModel>(
+  model: TModel,
+  ops: SeedBulkOp[],
+  label: string,
+  chunkSize = 500,
+): Promise<void> {
+  const writer = model as unknown as {
+    bulkWrite: (operations: SeedBulkOp[], options?: { ordered?: boolean }) => Promise<unknown>;
+  };
+  for (let index = 0; index < ops.length; index += chunkSize) {
+    const batch = ops.slice(index, index + chunkSize);
+    await withRetry(`${label} [${index + batch.length}/${ops.length}]`, () =>
+      writer.bulkWrite(batch, { ordered: false }),
+    );
+  }
+}
+
 async function run(): Promise<void> {
   const uri = process.env.MONGODB_URI ?? 'mongodb://127.0.0.1:27017/foodcompare';
   console.log(`[seed] Connecting to MongoDB...`);
-  await mongoose.connect(uri, { serverSelectionTimeoutMS: 8000 });
+  await withRetry('connect to MongoDB', () =>
+    mongoose.connect(uri, { serverSelectionTimeoutMS: 8000 }),
+  );
 
   const ProviderModel = mongoose.model(ModelNames.Provider, ProviderSchema);
   const RestaurantModel = mongoose.model(ModelNames.Restaurant, RestaurantSchema);
@@ -2944,46 +4161,65 @@ async function run(): Promise<void> {
   console.log(`[seed] Restaurants: ${restaurantByKey.size}`);
 
   // 3. Food items
-  let foodCount = 0;
+  const foodOps: SeedBulkOp[] = [];
   for (const d of DISHES) {
     const restaurant = restaurantByKey.get(d.restaurant);
     if (!restaurant) continue;
-    await FoodItemModel.findOneAndUpdate(
-      { restaurantId: restaurant._id, normalizedName: normalizeName(d.name) },
-      {
-        $set: {
-          restaurantId: restaurant._id,
-          displayName: d.name,
-          normalizedName: normalizeName(d.name),
-          description: d.description,
-          category: d.category,
-          dietaryType: d.dietaryType,
-          portionSize: d.portionSize,
-          variants: [{ name: d.portionSize, portionSize: d.portionSize, price: d.price }],
-          isActive: true,
+    foodOps.push({
+      updateOne: {
+        filter: { restaurantId: restaurant._id, normalizedName: normalizeName(d.name) },
+        update: {
+          $set: {
+            restaurantId: restaurant._id,
+            displayName: d.name,
+            normalizedName: normalizeName(d.name),
+            description: d.description,
+            category: d.category,
+            dietaryType: d.dietaryType,
+            portionSize: d.portionSize,
+            variants: [{ name: d.portionSize, portionSize: d.portionSize, price: d.price }],
+            mealTypes: d.mealTypes?.length ? d.mealTypes : inferMealTypes(d.name, d.category),
+            isActive: true,
+          },
         },
+        upsert: true,
       },
-      { upsert: true, new: true },
-    );
-    foodCount += 1;
+    });
   }
-  console.log(`[seed] Food items: ${foodCount}`);
+  await bulkWriteChunked(FoodItemModel, foodOps, 'food items');
+  console.log(`[seed] Food items: ${foodOps.length}`);
 
   // 4. Provider restaurants + menu items
-  let linkCount = 0;
-  let menuCount = 0;
   const urlKeyByRestaurant = new Map<string, string>();
   for (const r of RESTAURANTS) {
     urlKeyByRestaurant.set(r.key, normalizeName(r.name).replace(/\s+/g, '-'));
   }
+
+  const foodDocs = await withRetry('load food item ids', () =>
+    FoodItemModel.find(
+      { restaurantId: { $in: [...restaurantByKey.values()].map((r) => r._id) } },
+      { _id: 1, restaurantId: 1, normalizedName: 1 },
+    ).lean<
+      Array<{
+        _id: mongoose.Types.ObjectId;
+        restaurantId: mongoose.Types.ObjectId;
+        normalizedName: string;
+      }>
+    >(),
+  );
+  const foodIdByKey = new Map<string, mongoose.Types.ObjectId>();
+  for (const food of foodDocs) {
+    foodIdByKey.set(`${String(food.restaurantId)}:${food.normalizedName}`, food._id);
+  }
+
+  const linkOps: SeedBulkOp[] = [];
+  const menuOps: SeedBulkOp[] = [];
+  const seenLinks = new Set<string>();
   for (const d of DISHES) {
     const restaurant = restaurantByKey.get(d.restaurant);
     if (!restaurant) continue;
-    const food = await FoodItemModel.findOne({
-      restaurantId: restaurant._id,
-      normalizedName: normalizeName(d.name),
-    });
-    if (!food) continue;
+    const foodId = foodIdByKey.get(`${String(restaurant._id)}:${normalizeName(d.name)}`);
+    if (!foodId) continue;
 
     for (const slug of restaurant.providers) {
       const providerId = providerBySlug.get(slug)!;
@@ -2995,49 +4231,59 @@ async function run(): Promise<void> {
           : slug === 'swiggy'
             ? `https://www.swiggy.com/city/${restaurant.city}/${urlKey}`
             : `https://www.eatsure.com/${urlKey}`;
-      await ProviderRestaurantModel.findOneAndUpdate(
-        { providerId, providerRestaurantId },
-        {
-          $set: {
-            providerId,
-            providerRestaurantId,
-            restaurantId: restaurant._id,
-            officialUrl,
-            location: restaurant.serviceArea,
-            availability: true,
-            lastUpdatedAt: new Date(),
+
+      const linkKey = `${slug}-${restaurant.key}`;
+      if (!seenLinks.has(linkKey)) {
+        seenLinks.add(linkKey);
+        linkOps.push({
+          updateOne: {
+            filter: { providerId, providerRestaurantId },
+            update: {
+              $set: {
+                providerId,
+                providerRestaurantId,
+                restaurantId: restaurant._id,
+                officialUrl,
+                location: restaurant.serviceArea,
+                availability: true,
+                lastUpdatedAt: new Date(),
+              },
+            },
+            upsert: true,
           },
-        },
-        { upsert: true, new: true },
-      );
-      linkCount += 1;
+        });
+      }
 
       const factor = PRICE_FACTORS[slug] ?? 1;
       const menuPrice = Math.round(d.price * factor);
       const providerItemId = `pi-${slug}-${restaurant.key}-${normalizeName(d.name).replace(/\s+/g, '-')}`;
-      await ProviderMenuItemModel.findOneAndUpdate(
-        { providerId, providerItemId },
-        {
-          $set: {
-            providerId,
-            providerRestaurantId,
-            providerItemId,
-            normalizedFoodId: food._id,
-            displayName: d.name,
-            variant: d.portionSize,
-            menuPrice,
-            currency: 'INR',
-            availability: true,
-            sourceType: 'demo',
-            lastUpdatedAt: new Date(),
+      menuOps.push({
+        updateOne: {
+          filter: { providerId, providerItemId },
+          update: {
+            $set: {
+              providerId,
+              providerRestaurantId,
+              providerItemId,
+              normalizedFoodId: foodId,
+              displayName: d.name,
+              variant: d.portionSize,
+              menuPrice,
+              currency: 'INR',
+              availability: true,
+              sourceType: 'demo',
+              lastUpdatedAt: new Date(),
+            },
           },
+          upsert: true,
         },
-        { upsert: true, new: true },
-      );
-      menuCount += 1;
+      });
     }
   }
-  console.log(`[seed] Provider-restaurant links: ${linkCount}, menu items: ${menuCount}`);
+
+  await bulkWriteChunked(ProviderRestaurantModel, linkOps, 'provider-restaurant links');
+  await bulkWriteChunked(ProviderMenuItemModel, menuOps, 'menu items');
+  console.log(`[seed] Provider-restaurant links: ${linkOps.length}, menu items: ${menuOps.length}`);
 
   // 5. Offers (demonstration only)
   const now = new Date();

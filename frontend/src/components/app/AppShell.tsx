@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Search,
   UtensilsCrossed,
+  ChefHat,
   ArrowLeftRight,
   Tag,
   Heart,
@@ -35,6 +36,7 @@ interface NavItem {
 const NAV: NavItem[] = [
   { href: '/dashboard', label: 'Discover', icon: LayoutDashboard },
   { href: '/search', label: 'Search', icon: Search },
+  { href: '/dishes', label: 'Dishes', icon: ChefHat },
   { href: '/restaurants', label: 'Restaurants', icon: UtensilsCrossed },
   { href: '/compare', label: 'Compare', icon: ArrowLeftRight },
   { href: '/offers', label: 'Offers', icon: Tag },

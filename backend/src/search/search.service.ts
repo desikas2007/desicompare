@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, PipelineStage, Types } from 'mongoose';
-import { DietaryType, FoodItemSummary, RestaurantSummary } from '@foodcompare/shared-types';
+import {
+  DietaryType,
+  FoodItemSummary,
+  MealType,
+  RestaurantSummary,
+} from '@foodcompare/shared-types';
 import { ModelNames } from '../database/model-names';
 import { FoodItem } from '../database/schemas/food-item.schema';
 import { Restaurant } from '../database/schemas/restaurant.schema';
@@ -34,6 +39,7 @@ interface FoodAggDoc {
   dietaryType: string;
   portionSize: string;
   variants?: Array<{ name: string; portionSize: string; price?: number | null }>;
+  mealTypes?: string[];
   isActive: boolean;
   minPrice: number | null;
   providerCount: number;
@@ -78,6 +84,7 @@ export class SearchService {
     }
     if (query.category) match.category = new RegExp(normalizeName(query.category), 'i');
     if (query.dietaryType) match.dietaryType = query.dietaryType;
+    if (query.mealType) match.mealTypes = query.mealType;
 
     const menuMatch = providerId
       ? { providerId: new Types.ObjectId(providerId) }
@@ -228,6 +235,7 @@ export class SearchService {
         portionSize: v.portionSize,
         price: v.price ?? null,
       })),
+      mealTypes: (doc.mealTypes ?? []) as MealType[],
       isActive: doc.isActive,
       minPrice: doc.minPrice ?? null,
       providerCount: doc.providerCount ?? 0,

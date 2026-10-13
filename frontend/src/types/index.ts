@@ -28,6 +28,7 @@ export type {
   IntegrationMode,
   InternalOrderStatus,
   MatchConfidence,
+  MealType,
   OfferSummary,
   OrderConfirmationStatus,
   OrderPriceBreakdown,
@@ -44,7 +45,11 @@ export type {
   UserRole,
 } from '@foodcompare/shared-types';
 
-export { DietaryType as DietaryTypeEnum, QuoteStatus as QuoteStatusEnum } from '@foodcompare/shared-types';
+export {
+  DietaryType as DietaryTypeEnum,
+  MealType as MealTypeEnum,
+  QuoteStatus as QuoteStatusEnum,
+} from '@foodcompare/shared-types';
 
 export interface PaginationMeta {
   page: number;

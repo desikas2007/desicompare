@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEnum, IsMongoId, IsOptional, IsString, MaxLength } from 'class-validator';
-import { DietaryType } from '@foodcompare/shared-types';
+import { DietaryType, MealType } from '@foodcompare/shared-types';
 import { PaginationQueryDto } from '../../common/dto/pagination.dto';
 
 export class FoodItemQueryDto extends PaginationQueryDto {
@@ -22,6 +22,11 @@ export class FoodItemQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsEnum(DietaryType)
   dietaryType?: DietaryType;
+
+  @ApiPropertyOptional({ enum: MealType })
+  @IsOptional()
+  @IsEnum(MealType)
+  mealType?: MealType;
 
   @ApiPropertyOptional()
   @IsOptional()

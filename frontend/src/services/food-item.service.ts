@@ -1,10 +1,11 @@
 import { api } from '@/lib/api-client';
-import type { DietaryType, FoodItemSummary, Paginated } from '@/types';
+import type { DietaryType, FoodItemSummary, MealType, Paginated } from '@/types';
 
 export interface FoodItemFilters {
   q?: string;
   category?: string;
   dietaryType?: DietaryType;
+  mealType?: MealType;
   restaurantId?: string;
   page?: number;
   limit?: number;
@@ -27,6 +28,7 @@ export const foodItemService = {
         q: filters.q,
         category: filters.category,
         dietaryType: filters.dietaryType,
+        mealType: filters.mealType,
         restaurantId: filters.restaurantId,
         page: filters.page ?? 1,
         limit: filters.limit ?? 12,

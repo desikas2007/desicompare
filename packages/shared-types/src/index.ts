@@ -117,6 +117,14 @@ export interface FoodVariant {
   price?: number | null;
 }
 
+/** Meal slots a dish belongs to, used to group the dishes menu. */
+export const MealType = {
+  Breakfast: 'breakfast',
+  Lunch: 'lunch',
+  Dinner: 'dinner',
+} as const;
+export type MealType = (typeof MealType)[keyof typeof MealType];
+
 export interface FoodItemSummary {
   id: string;
   restaurantId: string;
@@ -128,6 +136,7 @@ export interface FoodItemSummary {
   dietaryType: DietaryType;
   portionSize: string;
   variants: FoodVariant[];
+  mealTypes: MealType[];
   isActive: boolean;
 }
 
@@ -375,6 +384,7 @@ export interface SearchFilters {
   cuisine?: string;
   provider?: string;
   dietaryType?: DietaryType;
+  mealType?: MealType;
   minPrice?: number;
   maxPrice?: number;
   minRating?: number;

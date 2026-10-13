@@ -30,6 +30,7 @@ export class FoodItemsService {
     }
     if (query.category) filter.category = new RegExp(normalizeName(query.category), 'i');
     if (query.dietaryType) filter.dietaryType = query.dietaryType;
+    if (query.mealType) filter.mealTypes = query.mealType;
     if (query.restaurantId) filter.restaurantId = new Types.ObjectId(query.restaurantId);
 
     const [docs, total] = await Promise.all([

@@ -12,6 +12,8 @@ interface FoodGridProps {
   favoriteIds?: Set<string>;
   onToggleFavorite?: (foodItemId: string) => void;
   emptyMessage?: string;
+  /** Prefix for per-item detail links, e.g. `/dishes` → `/dishes/<id>`. */
+  detailHrefBase?: string;
 }
 
 export function FoodGrid({
@@ -21,6 +23,7 @@ export function FoodGrid({
   favoriteIds,
   onToggleFavorite,
   emptyMessage = 'No dishes matched your search yet.',
+  detailHrefBase,
 }: FoodGridProps) {
   if (items.length === 0) {
     return (
@@ -39,6 +42,7 @@ export function FoodGrid({
           priority={index < priorityCount}
           isFavorite={showFavorites ? favoriteIds?.has(item.id) ?? false : false}
           onToggleFavorite={showFavorites ? onToggleFavorite : undefined}
+          detailHref={detailHrefBase ? `${detailHrefBase}/${item.id}` : undefined}
         />
       ))}
     </div>
