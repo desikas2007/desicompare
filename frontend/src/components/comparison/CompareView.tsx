@@ -11,7 +11,6 @@ import { FoodImage } from '@/components/food/FoodImage';
 import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Feedback';
 import { ApiError } from '@/lib/api-client';
-import { categoryPhoto } from '@/lib/imagery';
 
 const QUANTITY_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
@@ -195,8 +194,7 @@ function ComparisonSkeleton({ query }: { query: string }) {
     <div className="flex flex-col gap-6" aria-busy="true" aria-live="polite">
       <div className="flex items-center gap-4 rounded-3xl border border-line bg-surface p-4 shadow-sm">
         <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-surface-alt">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={categoryPhoto(query, query)} alt="" className="h-full w-full object-cover" />
+          <FoodImage alt="" name={query} seed={query} className="h-full w-full object-cover" />
         </div>
         <div>
           <p className="text-sm font-semibold text-ink">Comparing “{query}” across providers…</p>

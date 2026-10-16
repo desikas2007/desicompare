@@ -84,6 +84,7 @@ export default function DishDetailPage() {
             alt={item.displayName}
             category={item.category}
             seed={item.id}
+            name={item.displayName}
             priority
             className="h-full w-full object-cover"
           />

@@ -9,6 +9,7 @@
  */
 
 const UNSPLASH = 'https://images.unsplash.com/';
+const LOREMFLICKR = 'https://loremflickr.com/';
 
 /** Build a sized Unsplash URL for a known photo id. */
 export function foodPhoto(id: string, width = 800): string {
@@ -94,13 +95,88 @@ export function categoryPhoto(category?: string | null, seed?: string): string {
   return foodPhoto(id);
 }
 
-/** Prefer the real API image; fall back to a deterministic decorative photo. */
+/**
+ * Words that carry no visual meaning for a photo search (portion words,
+ * articles, filler). Dropping them keeps the keywords focused on the food.
+ */
+const KEYWORD_STOPWORDS = new Set([
+  'with',
+  'and',
+  'the',
+  'for',
+  'plus',
+  'of',
+  'in',
+  'on',
+  'a',
+  'an',
+  'to',
+  'full',
+  'half',
+  'mini',
+  'small',
+  'large',
+  'regular',
+  'jumbo',
+  'combo',
+  'plate',
+  'pack',
+  'piece',
+  'pieces',
+  'pcs',
+  'pc',
+  'set',
+  'extra',
+  'new',
+  'special',
+]);
+
+/** Turn a dish name (+ category) into a small, meaningful keyword list. */
+function dishKeywords(name: string, category?: string | null): string[] {
+  const tokenize = (value: string) =>
+    normalized(value)
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter((token) => token.length > 2 && !/^\d+$/.test(token) && !KEYWORD_STOPWORDS.has(token));
+
+  const merged = [...new Set([...tokenize(name), ...tokenize(category ?? '')])].slice(0, 5);
+  return merged.length ? merged : ['indian', 'food'];
+}
+
+/**
+ * Dish-specific photo from a keyword image service.
+ *
+ * Unlike {@link categoryPhoto} (one photo per category), the dish *name* drives
+ * the keywords so two different dishes in the same category get different
+ * pictures. `lock` pins the same dish to a stable image across reloads.
+ */
+export function dishPhoto(
+  name: string,
+  category?: string | null,
+  seed?: string,
+  width = 800,
+  height = 600,
+): string {
+  const keywords = dishKeywords(name, category).join(',');
+  const lock = (hash(seed ?? name ?? category ?? 'food') % 100000) + 1;
+  return `${LOREMFLICKR}${width}/${height}/${keywords}?lock=${lock}`;
+}
+
+/**
+ * Resolve the best image for a food item.
+ *
+ * Priority: a real API `imageUrl` always wins; otherwise a dish-specific
+ * decorative photo (when a `name` is known); otherwise the category photo.
+ * Callers needing an always-available fallback can omit `name`.
+ */
 export function resolveFoodImage(
   imageUrl: string | null | undefined,
   category?: string | null,
   seed?: string,
+  name?: string | null,
 ): string {
   if (imageUrl && imageUrl.trim().length > 0) return imageUrl;
+  if (name && name.trim().length > 0) return dishPhoto(name, category, seed);
   return categoryPhoto(category, seed);
 }
 

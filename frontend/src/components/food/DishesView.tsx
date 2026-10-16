@@ -119,38 +119,50 @@ export function DishesView() {
 
   return (
     <div className="flex flex-col gap-8">
-      <header className="flex flex-col gap-4">
-        <div>
-          <p className="inline-flex items-center gap-1.5 text-sm font-medium text-muted">
-            <UtensilsCrossed className="h-4 w-4 text-primary" />
-            Dishes menu
-          </p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
-            Browse every dish
-          </h1>
-          <p className="mt-1 text-sm text-ink-soft">
-            Pick a meal or a category — tap Chicken Biryani to reveal every biryani on the menu.
-          </p>
-        </div>
+      <header className="overflow-hidden rounded-3xl border border-line bg-gradient-to-br from-primary-soft via-surface to-surface p-5 shadow-sm sm:p-7">
+        <div className="flex flex-col gap-5">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="inline-flex items-center gap-1.5 text-sm font-medium text-muted">
+                <UtensilsCrossed className="h-4 w-4 text-primary" />
+                Dishes menu
+              </p>
+              <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
+                Browse every dish
+              </h1>
+              <p className="mt-1 max-w-xl text-sm text-ink-soft">
+                Pick a meal or a category — tap Chicken Biryani to reveal every biryani on the menu.
+              </p>
+            </div>
 
-        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none]">
-          {MEAL_TABS.map((tab) => (
-            <button
-              key={tab.value}
-              type="button"
-              onClick={() => selectMeal(tab.value)}
-              aria-pressed={meal === tab.value}
-              className={[
-                'flex shrink-0 items-center gap-2 rounded-pill border px-4 py-2 text-sm font-semibold transition',
-                meal === tab.value
-                  ? 'border-primary bg-primary-soft text-primary-dark'
-                  : 'border-line bg-surface text-ink hover:border-primary/40 hover:text-primary',
-              ].join(' ')}
-            >
-              <span aria-hidden>{tab.emoji}</span>
-              {tab.label}
-            </button>
-          ))}
+            <div className="flex shrink-0 items-stretch gap-3">
+              <StatChip label="Categories" value={categories.length} />
+              <StatChip
+                label="Dishes"
+                value={overview.data?.foodItems.meta.total ?? filtered.data?.foodItems.meta.total ?? 0}
+              />
+            </div>
+          </div>
+
+          <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none]">
+            {MEAL_TABS.map((tab) => (
+              <button
+                key={tab.value}
+                type="button"
+                onClick={() => selectMeal(tab.value)}
+                aria-pressed={meal === tab.value}
+                className={[
+                  'flex shrink-0 items-center gap-2 rounded-pill border px-4 py-2 text-sm font-semibold transition',
+                  meal === tab.value
+                    ? 'border-primary bg-primary text-white shadow-sm'
+                    : 'border-line bg-surface text-ink hover:border-primary/40 hover:text-primary',
+                ].join(' ')}
+              >
+                <span aria-hidden>{tab.emoji}</span>
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
       </header>
 
@@ -236,6 +248,15 @@ export function DishesView() {
           )}
         </section>
       )}
+    </div>
+  );
+}
+
+function StatChip({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="hidden min-w-[88px] flex-col justify-center rounded-2xl border border-line bg-surface/80 px-4 py-2.5 text-center shadow-xs backdrop-blur sm:flex">
+      <span className="text-lg font-bold leading-none text-ink">{value}</span>
+      <span className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-muted">{label}</span>
     </div>
   );
 }

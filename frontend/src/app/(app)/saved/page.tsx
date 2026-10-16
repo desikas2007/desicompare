@@ -139,6 +139,7 @@ function DishRow({
           alt={name}
           category={null}
           seed={favorite.foodItemId ?? name}
+          name={favorite.foodItemName}
           className="h-full w-full object-cover"
         />
       </div>
