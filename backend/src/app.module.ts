@@ -25,6 +25,7 @@ import { CartModule } from './cart/cart.module';
 import { CheckoutModule } from './checkout/checkout.module';
 import { OrdersModule } from './orders/orders.module';
 import { AdminModule } from './admin/admin.module';
+import { FeedbackModule } from './feedback/feedback.module';
 import { HealthModule } from './health/health.module';
 
 @Module({
@@ -60,6 +61,7 @@ import { HealthModule } from './health/health.module';
     CheckoutModule,
     OrdersModule,
     AdminModule,
+    FeedbackModule,
     HealthModule,
   ],
   providers: [
