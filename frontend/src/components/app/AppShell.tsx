@@ -12,6 +12,7 @@ import {
   ArrowLeftRight,
   Tag,
   Heart,
+  MessageSquare,
   ShoppingCart,
   Receipt,
   User as UserIcon,
@@ -41,6 +42,7 @@ const NAV: NavItem[] = [
   { href: '/compare', label: 'Compare', icon: ArrowLeftRight },
   { href: '/offers', label: 'Offers', icon: Tag },
   { href: '/saved', label: 'Saved', icon: Heart },
+  { href: '/feedback', label: 'Feedback', icon: MessageSquare },
   { href: '/admin', label: 'Admin', icon: Shield, adminOnly: true },
 ];
 
@@ -116,6 +118,16 @@ function ProfileMenu() {
             >
               <span className="inline-flex items-center gap-2">
                 <Heart size={15} /> Saved items
+              </span>
+            </Link>
+            <Link
+              href="/feedback"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2.5 text-sm text-ink-soft transition-colors hover:bg-surface-alt hover:text-ink"
+            >
+              <span className="inline-flex items-center gap-2">
+                <MessageSquare size={15} /> Send feedback
               </span>
             </Link>
             <button
