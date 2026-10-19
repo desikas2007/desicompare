@@ -23,6 +23,9 @@ export type {
   DietaryType,
   DiscountType,
   FavoriteSummary,
+  FeedbackCategory,
+  FeedbackStatus,
+  FeedbackSummary,
   FoodItemSummary,
   FoodVariant,
   IntegrationMode,
@@ -47,6 +50,8 @@ export type {
 
 export {
   DietaryType as DietaryTypeEnum,
+  FeedbackCategory as FeedbackCategoryEnum,
+  FeedbackStatus as FeedbackStatusEnum,
   MealType as MealTypeEnum,
   QuoteStatus as QuoteStatusEnum,
 } from '@foodcompare/shared-types';
