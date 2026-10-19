@@ -345,6 +345,48 @@ export interface FavoriteSummary {
 }
 
 /* ------------------------------------------------------------------ */
+/* Customer feedback                                                    */
+/* ------------------------------------------------------------------ */
+
+export const FeedbackCategory = {
+  General: 'general',
+  AppExperience: 'app_experience',
+  Restaurant: 'restaurant',
+  Dish: 'dish',
+  Pricing: 'pricing',
+  Delivery: 'delivery',
+  Bug: 'bug',
+  Other: 'other',
+} as const;
+export type FeedbackCategory =
+  (typeof FeedbackCategory)[keyof typeof FeedbackCategory];
+
+export const FeedbackStatus = {
+  New: 'new',
+  InReview: 'in_review',
+  Resolved: 'resolved',
+  Dismissed: 'dismissed',
+} as const;
+export type FeedbackStatus =
+  (typeof FeedbackStatus)[keyof typeof FeedbackStatus];
+
+export interface FeedbackSummary {
+  id: string;
+  userId: string;
+  userName?: string | null;
+  category: FeedbackCategory;
+  rating: number | null;
+  message: string;
+  restaurantId?: string | null;
+  foodItemId?: string | null;
+  restaurantName?: string | null;
+  foodItemName?: string | null;
+  status: FeedbackStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/* ------------------------------------------------------------------ */
 /* Users                                                              */
 /* ------------------------------------------------------------------ */
 

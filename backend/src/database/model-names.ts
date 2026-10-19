@@ -15,6 +15,7 @@ export const ModelNames = {
   Cart: 'Cart',
   Order: 'Order',
   RefreshSession: 'RefreshSession',
+  Feedback: 'Feedback',
 } as const;
 
 export type DatabaseConnection = Connection;
