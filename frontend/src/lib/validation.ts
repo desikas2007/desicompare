@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { FeedbackCategoryEnum } from '@/types';
 
 export const loginSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Enter a valid email'),
@@ -41,6 +42,18 @@ export const addressSchema = z.object({
   isDefault: z.boolean().optional(),
 });
 
+export const feedbackSchema = z.object({
+  category: z.nativeEnum(FeedbackCategoryEnum, {
+    required_error: 'Choose a category',
+    invalid_type_error: 'Choose a category',
+  }),
+  rating: z.number().min(1, 'Pick a rating').max(5).optional().nullable(),
+  message: z
+    .string()
+    .min(10, 'Tell us a bit more (at least 10 characters)')
+    .max(2000, 'Keep it under 2000 characters'),
+});
+
 export const forgotPasswordSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Enter a valid email'),
 });
@@ -58,6 +71,7 @@ export const resetPasswordSchema = z
 export type LoginValues = z.infer<typeof loginSchema>;
 export type RegisterValues = z.infer<typeof registerSchema>;
 export type AddressValues = z.infer<typeof addressSchema>;
+export type FeedbackValues = z.infer<typeof feedbackSchema>;
 export type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordValues = z.infer<typeof resetPasswordSchema>;
 
